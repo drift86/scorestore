@@ -210,9 +210,17 @@ Builder.load_string("""
     Button:
         font_size: 30
         size_hint: 0.4, 0.1
-        pos_hint: {"x": 0, "y": 0.1}
+        pos_hint: {"x": 0.3, "y": 0.6}
         text: "Enter new score"
-                        
+        
+    Button:
+        font_size: 30
+        size_hint: 0.4, 0.1
+        pos_hint: {"x": 0.3, "y": 0.4}
+        text: "View scores"
+
+<EnterScoreScreen>
+    name: 'enter-score'                         
 """)
 
 
@@ -272,7 +280,6 @@ class LoginScreen(Screen):
             return
 
         if self.password == self.password_attempt:
-            print("Login successful")
             home_screen.ids.user.text += self.user_name
             home_screen.user_name = self.user_name
             home_screen.user_id = self.user_id
@@ -385,6 +392,9 @@ class HomeScreen(Screen):
         self.user_name = ""
         self.user_id = 0
 
+
+class EnterScoreScree(Screen):
+    pass
 
 new_login = LoginScreen()
 home_screen = HomeScreen()
