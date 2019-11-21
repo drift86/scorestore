@@ -204,10 +204,15 @@ Builder.load_string("""
     Label:
         id: user
         text: "Logged in as: "
-        font_size: 20
-        pos_hint: {"x": 0.38, "y": 0.35}
+        font_size: 15
+        pos_hint: {"x": 0.35, "y": 0.35}
         
-                
+    Button:
+        font_size: 30
+        size_hint: 0.4, 0.1
+        pos_hint: {"x": 0, "y": 0.1}
+        text: "Enter new score"
+                        
 """)
 
 
@@ -379,7 +384,6 @@ class HomeScreen(Screen):
         super().__init__(**kw)
         self.user_name = ""
         self.user_id = 0
-
 
 
 new_login = LoginScreen()
