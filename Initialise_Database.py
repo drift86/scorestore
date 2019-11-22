@@ -25,7 +25,7 @@ class Database:
                                                userID int NOT NULL,
                                                rifle varchar(128),
                                                jacket varchar(128),
-                                               sling setting int,
+                                               sling_setting varchar(128),
                                                glove varchar(128), 
                                                PRIMARY KEY (setupID),
                                                FOREIGN KEY (userID) REFERENCES Users(userID)

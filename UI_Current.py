@@ -17,131 +17,127 @@ kivy.require("1.11.0")
 Builder.load_string("""
 <RegisterScreen>
     name: 'register'
-    FloatLayout:
-        Image:
-            source: 'scorestorelogo.png'
-            size_hint: 0.8, 0.8
-            pos_hint: {"x":0.1 , "y":0.535}
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+ 
+    Label:
+        text: "Name"
+        pos_hint: {"x":-0.3, "y":0.275}
 
-        Label:
-            text: "Name"
-            pos_hint: {"x":-0.3, "y":0.275}
+    TextInput:
+        id: name
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.75}
 
-        TextInput:
-            id: name
-            size_hint: 0.5, 0.05
-            pos_hint: {"x":0.3, "y":0.75}
+    Label:
+        text: "Email Address"
+        pos_hint: {"x":-0.3, "y":0.1925}
 
-        Label:
-            text: "Email Address"
-            pos_hint: {"x":-0.3, "y":0.1925}
+    TextInput:
+        id: email
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.667}
 
-        TextInput:
-            id: email
-            size_hint: 0.5, 0.05
-            pos_hint: {"x":0.3, "y":0.667}
+    Label:
+        text: "Password"
+        pos_hint: {"x":-0.3, "y":0.11}
 
-        Label:
-            text: "Password"
-            pos_hint: {"x":-0.3, "y":0.11}
+    TextInput:
+        id: password
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.584}
+        password: True
 
-        TextInput:
-            id: password
-            size_hint: 0.5, 0.05
-            pos_hint: {"x":0.3, "y":0.584}
-            password: True
+    Label:
+        text: "Club ID"
+        pos_hint: {"x":-0.3, "y":0.0275}
 
-        Label:
-            text: "Club ID"
-            pos_hint: {"x":-0.3, "y":0.0275}
-
-        TextInput:
-            id: clubid
-            size_hint: 0.5, 0.05
-            pos_hint: {"x":0.3, "y":0.501}
+    TextInput:
+        id: clubid
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.501}
             
-        Button:
-            font_size: 30
-            size_hint: 0.4, 0.1
-            pos_hint: {"x":0.3, "y":0.35}
-            text: "Register Account"
-            on_press: 
-                root.register_account(name.text, email.text, password.text, clubid.text)
+    Button:
+        font_size: 30
+        size_hint: 0.4, 0.1
+        pos_hint: {"x":0.3, "y":0.35}
+        text: "Register Account"
+        on_press: 
+            root.register_account(name.text, email.text, password.text, clubid.text)
             
-        Button:
-            font_size: 20
-            size_hint: 0.15, 0.05
-            pos_hint: {"x":0.82, "y":0.500}
-            text: "Find Club ID"
-            on_press: root.manager.current = 'find-club'
+    Button:
+        font_size: 20
+        size_hint: 0.15, 0.05
+        pos_hint: {"x":0.82, "y":0.500}
+        text: "Find Club ID"
+        on_press: root.manager.current = 'find-club'
             
-        Label:
-            id: error
-            text: ""
-            pos_hint: {"x": 0, "y": -0.2}
+    Label:
+        id: error
+        text: ""
+        pos_hint: {"x": 0, "y": -0.2}
             
-        Button:
-            font_size: 20
-            text: "Return to login"
-            size_hint: 0.2, 0.05
-            pos_hint: {"x": 0.4, "y":0.15}
-            on_press: root.manager.current = 'login'
+    Button:
+        font_size: 20
+        text: "Return to login"
+        size_hint: 0.2, 0.05
+        pos_hint: {"x": 0.4, "y":0.15}
+        on_press: root.manager.current = 'login'
 
 <LoginScreen>
     name: 'login'
-    FloatLayout:
-        Image:
-            source: 'scorestorelogo.png'
-            size_hint: 0.8, 0.8
-            pos_hint: {"x":0.1 , "y":0.535}
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
 
-        Label:
-            text: "User Email Address"
-            pos_hint: {"x":-0.3, "y":0.1925}
+    Label:
+        text: "User Email Address"
+        pos_hint: {"x":-0.3, "y":0.1925}
 
-        TextInput:
-            id: email
-            size_hint: 0.5, 0.05
-            pos_hint: {"x":0.3, "y":0.667}
+    TextInput:
+        id: email
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.667}
 
-        Label:
-            text: "Password"
-            pos_hint: {"x":-0.3, "y":0.11}
+    Label:
+        text: "Password"
+        pos_hint: {"x":-0.3, "y":0.11}
 
-        TextInput:
-            id: password
-            size_hint: 0.5, 0.05
-            pos_hint: {"x":0.3, "y":0.584}
-            password: True
+    TextInput:
+        id: password
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.584}
+        password: True
 
-        Button:
-            font_size: 30
-            size_hint: 0.4, 0.1
-            pos_hint: {"x":0.3, "y":0.42}
-            text: "Log in"
-            on_press:
-                root.login(email.text, password.text)
+    Button:
+        font_size: 30
+        size_hint: 0.4, 0.1
+        pos_hint: {"x":0.3, "y":0.42}
+        text: "Log in"
+        on_press:
+            root.login(email.text, password.text)
 
-        Label:
-            font_size: 20
-            text: "or"
-            pos_hint: {"x":0, "y":-0.12}
+    Label:
+        font_size: 20
+        text: "or"
+        pos_hint: {"x":0, "y":-0.12}
 
-        Button:
-            font_size: 30
-            size_hint: 0.4, 0.1
-            pos_hint: {"x":0.3, "y":0.23}
-            text: "Register"
-            on_press: 
-                root.manager.current = 'register'
+    Button:
+        font_size: 30
+        size_hint: 0.4, 0.1
+        pos_hint: {"x":0.3, "y":0.23}
+        text: "Register"
+        on_press: 
+            root.manager.current = 'register'
             
-        Label:
-            id: error
-            text: ""
-            pos_hint: {"x":0, "y":-0.4}
-            
-            
-            
+    Label:
+        id: error
+        text: ""
+        pos_hint: {"x":0, "y":-0.4}
+                                    
 <FindClubScreen>
     name: 'find-club'
     Image:
@@ -172,7 +168,6 @@ Builder.load_string("""
         id: result_list
         text: ""
         pos_hint: {"x": 0.08, "y": -0.05}
-        
         
     Button:
         font_size: 30
@@ -220,7 +215,97 @@ Builder.load_string("""
         size_hint: 0.4, 0.1
         pos_hint: {"x": 0.3, "y": 0.4}
         text: "View scores"
+        
+    Button:
+        font_size: 12
+        size_hint: 0.2, 0.05
+        pos_hint: {"x": 0.05, "y": 0.8}
+        text: "Add new or view setups"
+        on_press:
+            root.manager.current = 'setups'
 
+<SetupsMenuScreen>
+    name: 'setups'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+    
+    Button:
+        font_size: 25
+        size_hint: 0.3, 0.1
+        pos_hint: {"x":0.35 , "y": 0.65}
+        text: "Create new setup"
+        on_press:
+            root.new_setup()
+        
+    Button:
+        font_size: 25
+        size_hint: 0.3, 0.1
+        pos_hint: {"x":0.35 , "y": 0.5}
+        text: "View setups"
+        
+    Button:
+        font_size: 25
+        size_hint: 0.3, 0.1
+        pos_hint: {"x":0.35 , "y": 0.35}
+        text: "Edit setup"        
+    
+<NewSetupScreen>
+    name: 'new_setup'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+        
+    Label:
+        text: "Rifle"
+        pos_hint: {"x":-0.3, "y":0.275}
+        
+    Label:
+        text: "(Suggested: Name and serial num)"
+        font_size: 12.5
+        pos_hint: {"x":-0.33, "y": 0.255}
+        
+    TextInput:
+        id: rifle
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.75}
+
+    Label:
+        text: "Jacket"
+        pos_hint: {"x":-0.3, "y":0.1925}
+
+    TextInput:
+        id: jacket
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.667}
+
+    Label:
+        text: "Sling setting"
+        pos_hint: {"x":-0.3, "y":0.11}
+
+    TextInput:
+        id: sling
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.584}
+
+    Label:
+        text: "Glove"
+        pos_hint: {"x":-0.3, "y":0.0275}
+
+    TextInput:
+        id: glove
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.501}
+        
+    Button:
+        font_size: 30
+        size_hint: 0.3, 0.1
+        pos_hint: {"x": 0.35, "y": 0.3}
+        text: "Add setup"        
+    
+        
 <EnterScoreScreen>
     name: 'enter-score'
     Image:
@@ -230,7 +315,7 @@ Builder.load_string("""
         
     Label:
         pos_hint: {"x":0, "y": 0}
-        text: "Enter you score and details of the shoot"
+        text: "Enter your score and details of the shoot"
         
                              
 """)
@@ -404,9 +489,30 @@ class HomeScreen(Screen):
         self.user_name = ""
         self.user_id = 0
 
+    def go_setup(self):
+        setup_screen.user_id = self.user_id
+
+
+class SetupsMenuScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.user_id = 0
+
+    def new_setup(self):
+        new_setup.user_id = self.user_id
+        sm.current = 'new_setup'
+
 
 class EnterScoreScreen(Screen):
     pass
+
+
+class NewSetupScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.user_id = 0
+
+    def add_new_setup(self, rifleText,  jacketText, slingText, ):
 
 
 login_screen = LoginScreen()
@@ -414,6 +520,8 @@ register_screen = RegisterScreen()
 find_club = FindClubScreen()
 home_screen = HomeScreen()
 enter_score = EnterScoreScreen()
+setup_screen = SetupsMenuScreen()
+new_setup = NewSetupScreen()
 
 sm = ScreenManager(transition=FadeTransition())
 
@@ -422,6 +530,8 @@ sm.add_widget(register_screen)
 sm.add_widget(find_club)
 sm.add_widget(home_screen)
 sm.add_widget(enter_score)
+sm.add_widget(setup_screen)
+sm.add_widget(new_setup)
 
 
 class ScoreStore(App):
