@@ -212,6 +212,8 @@ Builder.load_string("""
         size_hint: 0.4, 0.1
         pos_hint: {"x": 0.3, "y": 0.6}
         text: "Enter new score"
+        on_press:
+            root.manager.current = 'enter-score'
         
     Button:
         font_size: 30
@@ -220,7 +222,17 @@ Builder.load_string("""
         text: "View scores"
 
 <EnterScoreScreen>
-    name: 'enter-score'                         
+    name: 'enter-score'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+        
+    Label:
+        pos_hint: {"x":0, "y": 0}
+        text: "Enter you score and details of the shoot"
+        
+                             
 """)
 
 
@@ -393,18 +405,23 @@ class HomeScreen(Screen):
         self.user_id = 0
 
 
-class EnterScoreScree(Screen):
+class EnterScoreScreen(Screen):
     pass
 
-new_login = LoginScreen()
+
+login_screen = LoginScreen()
+register_screen = RegisterScreen()
+find_club = FindClubScreen()
 home_screen = HomeScreen()
+enter_score = EnterScoreScreen()
 
 sm = ScreenManager(transition=FadeTransition())
 
-sm.add_widget(new_login)
-sm.add_widget(RegisterScreen(name='register'))
-sm.add_widget(FindClubScreen(name='find-club'))
+sm.add_widget(login_screen)
+sm.add_widget(register_screen)
+sm.add_widget(find_club)
 sm.add_widget(home_screen)
+sm.add_widget(enter_score)
 
 
 class ScoreStore(App):
