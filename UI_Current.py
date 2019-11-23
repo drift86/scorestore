@@ -237,13 +237,15 @@ Builder.load_string("""
         pos_hint: {"x":0.35 , "y": 0.65}
         text: "Create new setup"
         on_press:
-            root.new_setup()
+            root.manager.current = 'new_setup'
         
     Button:
         font_size: 25
         size_hint: 0.3, 0.1
         pos_hint: {"x":0.35 , "y": 0.5}
         text: "View setups"
+        on_press:
+            root.view_setups()
         
     Button:
         font_size: 25
@@ -327,7 +329,62 @@ Builder.load_string("""
         text: "Home"
         on_press:
             root.manager.current = 'home'  
-            
+         
+<ViewSetupScreen>
+    name: 'view_setups'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+    
+    Label:
+        id: id_view
+        text: "" 
+        pos_hint: {"x": -0.15, "y": 0.3}
+        
+    Label
+        text: "Setup ID:"
+        pos_hint: {"x": -0.1, "y":0.25}
+        
+    TextInput:
+        id: setup_id_choice
+        size_hint: 0.1, 0.04
+        pos_hint: {"x": 0.45, "y": 0.73}
+
+    Button:
+        font_size: 20
+        size_hint: 0.1, 0.04
+        pos_hint: {"x": 0.555, "y": 0.73}
+        text: "View setup"
+        
+    Label:
+        id: rifle
+        text: "Rifle:"
+        pos_hint: {"x":-0.3, "y":0.175}
+        
+    Label:
+        id: jacket
+        text: "Jacket:"
+        pos_hint: {"x":-0.3, "y":0.1025}
+        
+    Label:
+        id: sling
+        text: "Sling setting:"
+        pos_hint: {"x":-0.3, "y":0.01}
+        
+    Label:
+        id: glove
+        text: "Glove:"
+        pos_hint: {"x":-0.3, "y":-0.0722}
+        
+    Button:
+        font_size: 15
+        size_hint: 0.1, 0.05
+        pos_hint: {"x": 0.05, "y": 0.05}
+        text: "Home"
+        on_press:
+            root.manager.current = 'home'
+                    
 <EnterScoreScreen>
     name: 'enter-score'
     Image:
@@ -526,23 +583,31 @@ class SetupsMenuScreen(Screen):
         super().__init__(**kw)
         self.user_id = 0
 
-    def new_setup(self):
-        new_setup.user_id = self.user_id
-        sm.current = 'new_setup'
-
-
-class EnterScoreScreen(Screen):
-    pass
+    def view_setups(self):
+        view_setup.view_setup()
+        sm.current = 'view_setups'
 
 
 class NewSetupScreen(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
         self.user_id = 0
+        self.setup_id = 0
         self.rifle = ""
         self.jacket = ""
         self.sling = ""
         self.glove = ""
+
+    def new_setup_id(self):
+        cursor.execute('''SELECT max(setupID) as setupID FROM Setups;''')
+        last_sid = cursor.fetchall()
+        last_sid = str(last_sid)
+        last_sid = last_sid.strip("[]")
+        last_sid = last_sid.strip("()")
+        last_sid = last_sid.strip(",")
+        last_sid = int(last_sid)
+        setup_id = last_sid + 1
+        return setup_id
 
     def add_new_setup(self, rifleText,  jacketText, slingText, gloveText):
         self.ids.error.text = ""
@@ -551,6 +616,8 @@ class NewSetupScreen(Screen):
             self.jacket = jacketText
             self.sling = slingText
             self.glove = gloveText
+            self.setup_id = self.new_setup_id()
+            self.user_id = home_screen.user_id
             for i in [self.rifle, self.jacket, self.sling, self.glove]:
                 if len(i) == 0:
                     self.ids.error.text = "Please input a value for all fields"
@@ -560,8 +627,45 @@ class NewSetupScreen(Screen):
             self.ids.error.text = "Invalid input check format of inputted info"
             return
 
-        cursor.execute('''INSERT INTO Users(userID, name, clubID, email, password) VALUES (?,?,?,?,?)''',
-                       (self.userID, self.fullname, self.clubID, self.email, self.password))
+        cursor.execute('''INSERT INTO Setups(setupID, userID, rifle, jacket, sling_setting, glove)
+                        VALUES (?,?,?,?,?,?)''',
+                       (self.setup_id, self.user_id, self.rifle, self.jacket, self.sling, self.glove))
+        db.commit()
+
+        sm.current = 'setups'
+
+
+class ViewSetupScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.user_id = 0
+        self.user_name = ""
+        self.user_setups = []
+
+    def format_setups(self, setups):
+        setups = str(setups)
+        setups = setups.strip("[]")
+        setups = setups.strip("()")
+        if len(setups) == 0:
+            setups = "No setups in DB"
+            return setups
+
+        return setups
+
+    def view_setup(self):
+        self.user_name = home_screen.user_name
+        self.user_id = home_screen.user_id
+        cursor.execute('''SELECT setupID from Setups WHERE userID LIKE ?''', (self.user_id,))
+        self.user_setups = cursor.fetchall()
+        self.ids.id_view.text = str(self.user_name) + "'s setup IDs: " + self.format_setups(self.user_setups)
+
+    # def show_setup(self):
+        # cursor.execute('''SELECT rifle, ''')
+
+
+class EnterScoreScreen(Screen):
+    pass
+
 
 login_screen = LoginScreen()
 register_screen = RegisterScreen()
@@ -570,6 +674,7 @@ home_screen = HomeScreen()
 enter_score = EnterScoreScreen()
 setup_screen = SetupsMenuScreen()
 new_setup = NewSetupScreen()
+view_setup = ViewSetupScreen()
 
 sm = ScreenManager(transition=FadeTransition())
 
@@ -580,6 +685,7 @@ sm.add_widget(home_screen)
 sm.add_widget(enter_score)
 sm.add_widget(setup_screen)
 sm.add_widget(new_setup)
+sm.add_widget(view_setup)
 
 
 class ScoreStore(App):
