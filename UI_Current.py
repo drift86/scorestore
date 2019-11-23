@@ -249,7 +249,15 @@ Builder.load_string("""
         font_size: 25
         size_hint: 0.3, 0.1
         pos_hint: {"x":0.35 , "y": 0.35}
-        text: "Edit setup"        
+        text: "Edit setup"
+        
+    Button:
+        font_size: 15
+        size_hint: 0.1, 0.05
+        pos_hint: {"x": 0.05, "y": 0.05}
+        text: "Home"
+        on_press:
+            root.manager.current = 'home'        
     
 <NewSetupScreen>
     name: 'new_setup'
@@ -304,8 +312,22 @@ Builder.load_string("""
         size_hint: 0.3, 0.1
         pos_hint: {"x": 0.35, "y": 0.3}
         text: "Add setup"        
-    
+        on_press:
+            root.add_new_setup(rifle.text, jacket.text, sling.text, glove.text)
+       
+    Label:
+        id: error
+        text: ""
+        pos_hint: {"x":0, "y":-0.4}
         
+    Button:
+        font_size: 15
+        size_hint: 0.1, 0.05
+        pos_hint: {"x": 0.05, "y": 0.05}
+        text: "Home"
+        on_press:
+            root.manager.current = 'home'  
+            
 <EnterScoreScreen>
     name: 'enter-score'
     Image:
@@ -316,6 +338,14 @@ Builder.load_string("""
     Label:
         pos_hint: {"x":0, "y": 0}
         text: "Enter your score and details of the shoot"
+        
+    Button:
+        font_size: 15
+        size_hint: 0.1, 0.05
+        pos_hint: {"x": 0.05, "y": 0.05}
+        text: "Home"
+        on_press:
+            root.manager.current = 'home'  
         
                              
 """)
@@ -423,12 +453,10 @@ class RegisterScreen(Screen):
             self.ids.error.text = "Invalid input check format of inputted info"
             return
 
-        already = cursor.execute('''SELECT email FROM Users WHERE email LIKE ?''', (self.email,))
-        for i in already:
-            already = i
-            break
+        cursor.execute('''SELECT email FROM Users WHERE email LIKE ?''', (self.email,))
+        already = cursor.fetchall()
 
-        if len(already[0]) > 0:
+        if len(already) > 0:
             self.ids.error.text = "An account with that email already exists"
             return
 
@@ -511,9 +539,29 @@ class NewSetupScreen(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
         self.user_id = 0
+        self.rifle = ""
+        self.jacket = ""
+        self.sling = ""
+        self.glove = ""
 
-    def add_new_setup(self, rifleText,  jacketText, slingText, ):
+    def add_new_setup(self, rifleText,  jacketText, slingText, gloveText):
+        self.ids.error.text = ""
+        try:
+            self.rifle = rifleText
+            self.jacket = jacketText
+            self.sling = slingText
+            self.glove = gloveText
+            for i in [self.rifle, self.jacket, self.sling, self.glove]:
+                if len(i) == 0:
+                    self.ids.error.text = "Please input a value for all fields"
+                    return
 
+        except ValueError:
+            self.ids.error.text = "Invalid input check format of inputted info"
+            return
+
+        cursor.execute('''INSERT INTO Users(userID, name, clubID, email, password) VALUES (?,?,?,?,?)''',
+                       (self.userID, self.fullname, self.clubID, self.email, self.password))
 
 login_screen = LoginScreen()
 register_screen = RegisterScreen()
