@@ -252,6 +252,8 @@ Builder.load_string("""
         size_hint: 0.3, 0.1
         pos_hint: {"x":0.35 , "y": 0.35}
         text: "Edit setup"
+        on_press:
+            root.edit_setups()
         
     Button:
         font_size: 15
@@ -352,30 +354,45 @@ Builder.load_string("""
         pos_hint: {"x": 0.45, "y": 0.73}
 
     Button:
-        font_size: 20
+        font_size: 15
         size_hint: 0.1, 0.04
         pos_hint: {"x": 0.555, "y": 0.73}
         text: "View setup"
+        on_press:
+            root.show_setup(setup_id_choice.text)
+            
         
     Label:
-        id: rifle
         text: "Rifle:"
-        pos_hint: {"x":-0.3, "y":0.175}
+        pos_hint: {"x":-0.3, "y":0.155}
+        
+    Label:
+        id:rifle
+        pos_hint: {"x":0, "y":0.155}
+        
+    Label:
+        text: "Jacket:"
+        pos_hint: {"x":-0.3, "y":0.0825}
         
     Label:
         id: jacket
-        text: "Jacket:"
-        pos_hint: {"x":-0.3, "y":0.1025}
+        pos_hint: {"x":0, "y":0.0825}
         
     Label:
-        id: sling
         text: "Sling setting:"
         pos_hint: {"x":-0.3, "y":0.01}
         
     Label:
-        id: glove
+        id: sling
+        pos_hint: {"x":0, "y":0.01}
+        
+    Label:
         text: "Glove:"
         pos_hint: {"x":-0.3, "y":-0.0722}
+        
+    Label:
+        id: glove
+        pos_hint: {"x":0, "y":-0.0722}
         
     Button:
         font_size: 15
@@ -384,7 +401,102 @@ Builder.load_string("""
         text: "Home"
         on_press:
             root.manager.current = 'home'
-                    
+            
+    Label:
+        id: error
+        text: ""
+        pos_hint: {"x":0, "y":-0.4}
+   
+<EditSetupScreen>
+    name: 'edit_setups'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+    
+    Label:
+        id: id_view
+        text: "" 
+        pos_hint: {"x": -0.15, "y": 0.3}
+        
+    Label:
+        text: "Setup ID:"
+        pos_hint: {"x": -0.1, "y":0.25}
+        
+    TextInput:
+        id: setup_id_choice
+        size_hint: 0.1, 0.04
+        pos_hint: {"x": 0.45, "y": 0.73}
+
+    Button:
+        font_size: 15
+        size_hint: 0.1, 0.04
+        pos_hint: {"x": 0.555, "y": 0.73}
+        text: "View setup"
+        on_press:
+            root.show_setup(setup_id_choice.text)
+        
+    Label:
+        text: "Rifle:"
+        pos_hint: {"x":-0.3, "y":0.155}
+        
+    TextInput:
+        id:rifle
+        text: ""
+        pos_hint: {"x":0.3, "y":0.645}
+        size_hint: 0.5, 0.05
+        
+    Label:
+        text: "Jacket:"
+        pos_hint: {"x":-0.3, "y":0.0825}
+        
+    TextInput:
+        id: jacket
+        text: ""
+        pos_hint: {"x":0.3, "y":0.565}
+        size_hint: 0.5, 0.05
+        
+    Label:
+        text: "Sling setting:"
+        pos_hint: {"x":-0.3, "y":0.01}
+        
+    TextInput:
+        id: sling
+        text: ""
+        pos_hint: {"x":0.3, "y":0.485}
+        size_hint: 0.5, 0.05
+        
+    Label:
+        text: "Glove:"
+        pos_hint: {"x":-0.3, "y":-0.0722}
+        
+    TextInput:
+        id: glove
+        text: ""
+        pos_hint: {"x":0.3, "y":0.405}
+        size_hint: 0.5, 0.05
+        
+    Button:
+        font_size: 15
+        size_hint: 0.1, 0.05
+        pos_hint: {"x": 0.05, "y": 0.05}
+        text: "Home"
+        on_press:
+            root.manager.current = 'home'
+            
+    Label:
+        id: error
+        text: ""
+        pos_hint: {"x":0, "y":-0.4}
+        
+    Button:
+        font_size: 20
+        size_hint:0.2, 0.1
+        pos_hint: {"x": 0.4, "y": 0.275}
+        text: "Commit Changes"
+        on_press:
+            root.commit_changes(rifle.text, jacket.text, sling.text, glove.text)
+                        
 <EnterScoreScreen>
     name: 'enter-score'
     Image:
@@ -396,15 +508,15 @@ Builder.load_string("""
         pos_hint: {"x":0, "y": 0}
         text: "Enter your score and details of the shoot"
         
+        
     Button:
         font_size: 15
         size_hint: 0.1, 0.05
         pos_hint: {"x": 0.05, "y": 0.05}
         text: "Home"
         on_press:
-            root.manager.current = 'home'  
-        
-                             
+            root.manager.current = 'home'
+                                           
 """)
 
 
@@ -587,6 +699,10 @@ class SetupsMenuScreen(Screen):
         view_setup.view_setup()
         sm.current = 'view_setups'
 
+    def edit_setups(self):
+        edit_setup.view_setup()
+        sm.current = 'edit_setups'
+
 
 class NewSetupScreen(Screen):
     def __init__(self, **kw):
@@ -640,6 +756,7 @@ class ViewSetupScreen(Screen):
         super().__init__(**kw)
         self.user_id = 0
         self.user_name = ""
+        self.setup_id = 0
         self.user_setups = []
 
     def format_setups(self, setups):
@@ -655,12 +772,102 @@ class ViewSetupScreen(Screen):
     def view_setup(self):
         self.user_name = home_screen.user_name
         self.user_id = home_screen.user_id
-        cursor.execute('''SELECT setupID from Setups WHERE userID LIKE ?''', (self.user_id,))
+        cursor.execute('''SELECT setupID FROM Setups WHERE userID LIKE ?''', (self.user_id,))
         self.user_setups = cursor.fetchall()
         self.ids.id_view.text = str(self.user_name) + "'s setup IDs: " + self.format_setups(self.user_setups)
 
-    # def show_setup(self):
-        # cursor.execute('''SELECT rifle, ''')
+    def show_setup(self, setup_idText):
+        self.ids.error.text = ""
+        self.setup_id = setup_idText
+        cursor.execute('''SELECT rifle, jacket, sling_setting, glove FROM Setups WHERE setupID LIKE ?''',
+                       (self.setup_id,))
+        setup = cursor.fetchall()
+        try:
+            rifle = setup[0][0]
+            jacket = setup[0][1]
+            sling = setup[0][2]
+            glove = setup[0][3]
+
+        except IndexError:
+            self.ids.error.text = "Cannot find that setup, check the search term"
+            return
+
+        self.ids.rifle.text += rifle
+        self.ids.jacket.text += jacket
+        self.ids.sling.text += sling
+        self.ids.glove.text += glove
+
+
+class EditSetupScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.user_id = 0
+        self.user_name = ""
+        self.setup_id = 0
+        self.user_setups = []
+
+    def format_setups(self, setups):
+        setups = str(setups)
+        setups = setups.strip("[]")
+        setups = setups.strip("()")
+        if len(setups) == 0:
+            setups = "No setups in DB"
+            return setups
+
+        return setups
+
+    def view_setup(self):
+        self.user_name = home_screen.user_name
+        self.user_id = home_screen.user_id
+        cursor.execute('''SELECT setupID FROM Setups WHERE userID LIKE ?''', (self.user_id,))
+        self.user_setups = cursor.fetchall()
+        self.ids.id_view.text = str(self.user_name) + "'s setup IDs: " + self.format_setups(self.user_setups)
+
+    def show_setup(self, setup_idText):
+        self.ids.error.text = ""
+        self.setup_id = setup_idText
+        cursor.execute('''SELECT rifle, jacket, sling_setting, glove FROM Setups WHERE setupID LIKE ?''',
+                       (self.setup_id,))
+        setup = cursor.fetchall()
+        try:
+            rifle = setup[0][0]
+            jacket = setup[0][1]
+            sling = setup[0][2]
+            glove = setup[0][3]
+
+        except IndexError:
+            self.ids.error.text = "Cannot find that setup, check the search term"
+            return
+
+        self.ids.rifle.text += rifle
+        self.ids.jacket.text += jacket
+        self.ids.sling.text += sling
+        self.ids.glove.text += glove
+
+    def commit_changes(self, rifleText, jacketText, slingText, gloveText):
+        cursor.execute('''SELECT userID FROM Setups WHERE setupID LIKE ?''', (self.setup_id,))
+        user_id = cursor.fetchall()
+        user_id = str(user_id)
+        user_id = user_id.strip("[]")
+        user_id = user_id.strip("()")
+        user_id = user_id.strip(",")
+        user_id = user_id.strip("'")
+        user_id = int(user_id)
+        if self.user_id != user_id:
+            self.ids.error.text = "You cannot alter this setup, it does not belong to you"
+            return
+
+        rifle = rifleText
+        jacket = jacketText
+        sling = slingText
+        glove = gloveText
+
+        cursor.execute('''DELETE FROM Setups WHERE setupID = ?''', (self.setup_id,))
+        cursor.execute('''INSERT INTO Setups(setupID, userID, rifle, jacket, sling_setting, glove)
+                                VALUES (?,?,?,?,?,?)''',
+                       (self.setup_id, self.user_id, rifle, jacket, sling, glove))
+        db.commit()
+        sm.current = 'home'
 
 
 class EnterScoreScreen(Screen):
@@ -675,6 +882,7 @@ enter_score = EnterScoreScreen()
 setup_screen = SetupsMenuScreen()
 new_setup = NewSetupScreen()
 view_setup = ViewSetupScreen()
+edit_setup = EditSetupScreen()
 
 sm = ScreenManager(transition=FadeTransition())
 
@@ -686,6 +894,7 @@ sm.add_widget(enter_score)
 sm.add_widget(setup_screen)
 sm.add_widget(new_setup)
 sm.add_widget(view_setup)
+sm.add_widget(edit_setup)
 
 
 class ScoreStore(App):
