@@ -505,10 +505,48 @@ Builder.load_string("""
         pos_hint: {"x":0.1 , "y":0.535}
         
     Label:
-        pos_hint: {"x":0, "y": 0}
-        text: "Enter your score and details of the shoot"
+        pos_hint: {"x":0, "y": 0.3}
+        text: "Enter your score and format:"
+    
+    Label:
+        text: "2 & 7"
+        pos_hint: {"x": -0.1, "y": 0.2}
+           
+    CheckBox:
+        id: seven
+        pos_hint: {"x": 0.385, "y": 0.65}
+        size_hint: 0.03, 0.03
         
+    Label:
+        text: "2 & 10"
+        pos_hint: {"x": 0, "y": 0.2}
         
+    CheckBox:
+        id: ten
+        pos_hint: {"x": 0.485, "y": 0.65}
+        size_hint: 0.03, 0.03
+        
+    Label:
+        text: "2 & 15"
+        pos_hint: {"x": 0.1, "y": 0.2}
+        
+    CheckBox:
+        id: fifteen
+        pos_hint: {"x": 0.585, "y": 0.65}
+        size_hint: 0.03, 0.03
+        
+    TextInput:
+        id: score
+        font_size: 30
+        size_hint: 0.12, 0.08
+        pos_hint: {"x": 0.44, "y":0.5}
+        
+    Button:
+        text: "Continue"
+        size_hint: 0.2, 0.1
+        pos_hint: {"x": 0.4, "y": 0.3}
+        on_press: root.get_score(score.text)
+    
     Button:
         font_size: 15
         size_hint: 0.1, 0.05
@@ -516,6 +554,11 @@ Builder.load_string("""
         text: "Home"
         on_press:
             root.manager.current = 'home'
+            
+    Label:
+        id: error
+        text: ""
+        pos_hint: {"x":0, "y":-0.4}
                                            
 """)
 
@@ -871,7 +914,46 @@ class EditSetupScreen(Screen):
 
 
 class EnterScoreScreen(Screen):
-    pass
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.score = 0
+        self.max = 0
+        self.ids.seven.bind(active=self.score_format)
+        self.ids.ten.bind(active=self.score_format)
+        self.ids.fifteen.bind(active=self.score_format)
+
+    def score_format(self, checkbox, checked):
+        self.max = 0
+        if not checked:
+            self.max = 0
+            return
+
+        if checkbox == self.ids.seven:
+            self.max = 35
+            return
+
+        if checkbox == self.ids.ten:
+            self.max = 50
+            return
+
+        if checkbox == self.ids.fifteen:
+            self.max = 75
+            return
+
+        else:
+            self.max = 0
+            return
+
+    def get_score(self, scoreText):
+        self.ids.error.text = ""
+        self.score = scoreText
+        if self.max == 0:
+            self.ids.error.text = "Please make sure you have chosen the correct shoot format"
+            return
+
+        if int(float(self.score)) > self.max:
+            self.ids.error.text = "Please make sure you have chosen the correct shoot format"
+            return
 
 
 login_screen = LoginScreen()
