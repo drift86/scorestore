@@ -559,7 +559,99 @@ Builder.load_string("""
         id: error
         text: ""
         pos_hint: {"x":0, "y":-0.4}
-                                           
+
+<EnterDetailsScreen>
+    name: 'enter_details'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+        
+    Label:
+        pos_hint: {"x":0, "y": 0.35}
+        text: "Enter the details of your shoot:"
+    
+    Label:
+        text: "Distance"
+        pos_hint: {"x": -0.3, "y": 0.3}
+        
+    Label
+        text: "(Yards)"
+        pos_hint: {"x": -0.3, "y": 0.265}
+        
+    Label:
+        text: "300"
+        pos_hint: {"x": -0.15, "y": 0.3}
+           
+    CheckBox:
+        id: three
+        pos_hint: {"x": 0.335, "y": 0.75}
+        size_hint: 0.03, 0.03
+        
+    Label:
+        text: "500"
+        pos_hint: {"x": -0.05, "y": 0.3}
+           
+    CheckBox:
+        id: five
+        pos_hint: {"x": 0.435, "y": 0.75}
+        size_hint: 0.03, 0.03
+        
+    Label:
+        text: "600"
+        pos_hint: {"x": 0.05, "y": 0.3}
+        
+    CheckBox:
+        id: six
+        pos_hint: {"x": 0.535, "y": 0.75}
+        size_hint: 0.03, 0.03
+        
+    Label:
+        text: "900"
+        pos_hint: {"x": 0.15, "y": 0.3}
+        
+    CheckBox:
+        id: nine
+        pos_hint: {"x": 0.635, "y": 0.75}
+        size_hint: 0.03, 0.03
+        
+    Label:
+        text: "1000"
+        pos_hint: {"x": 0.25, "y": 0.3}
+           
+    CheckBox:
+        id: ten
+        pos_hint: {"x": 0.735, "y": 0.75}
+        size_hint: 0.03, 0.03
+        
+    Label:
+        text: "Ammo:"
+        pos_hint: {"x":-0.3, "y":0.1925}
+
+    TextInput:
+        id: ammo
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.667}
+
+    Label:
+        text: "Light:"
+        pos_hint: {"x":-0.3, "y":0.11}
+
+    TextInput:
+        id: light
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.584}
+
+    Label:
+        text: "Weather"
+        pos_hint: {"x":-0.3, "y":0.0275}
+
+    TextInput:
+        id: weather
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.501}    
+    
+                                                   
 """)
 
 
@@ -955,12 +1047,30 @@ class EnterScoreScreen(Screen):
             self.ids.error.text = "Please make sure you have chosen the correct shoot format"
             return
 
+        enter_details.score = self.score
+        sm.current = 'enter_details'
+
+
+class EnterDetailsScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.score = 0
+        self.distance = 0
+        self.ammo = ""
+        self.light = ""
+        self.weather = ""
+        self.range = ""
+        self.target = 0
+        self.setupID = 0
+
+    # def get_details(self, ):
 
 login_screen = LoginScreen()
 register_screen = RegisterScreen()
 find_club = FindClubScreen()
 home_screen = HomeScreen()
 enter_score = EnterScoreScreen()
+enter_details = EnterDetailsScreen()
 setup_screen = SetupsMenuScreen()
 new_setup = NewSetupScreen()
 view_setup = ViewSetupScreen()
@@ -973,6 +1083,7 @@ sm.add_widget(register_screen)
 sm.add_widget(find_club)
 sm.add_widget(home_screen)
 sm.add_widget(enter_score)
+sm.add_widget(enter_details)
 sm.add_widget(setup_screen)
 sm.add_widget(new_setup)
 sm.add_widget(view_setup)
