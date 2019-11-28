@@ -40,6 +40,7 @@ class Database:
                                                 weather varchar(128),
                                                 range varchar(128),
                                                 target int,
+                                                date DATE,
                                                 PRIMARY KEY (userID),
                                                 FOREIGN KEY (setupID) REFERENCES Setups(setupID)
                                                 );''')

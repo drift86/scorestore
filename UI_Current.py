@@ -643,14 +643,55 @@ Builder.load_string("""
         pos_hint: {"x":0.3, "y":0.584}
 
     Label:
-        text: "Weather"
+        text: "Weather:"
         pos_hint: {"x":-0.3, "y":0.0275}
 
     TextInput:
         id: weather
         size_hint: 0.5, 0.05
-        pos_hint: {"x":0.3, "y":0.501}    
+        pos_hint: {"x":0.3, "y":0.501}   
+        
+    Label:
+        text: "Range:"
+        pos_hint: {"x": -0.3, "y": -0.055}
+        
+    TextInput:
+        id: range
+        size_hint: 0.5, 0.05
+        pos_hint: {"x": 0.3, "y": 0.418} 
     
+    Label:
+        text: "Target/Lane"
+        pos_hint: {"x": -0.3, "y": -0.1375}
+        
+    TextInput:
+        id: target
+        size_hint: 0.1, 0.05
+        pos_hint: {"x": 0.3, "y": 0.335}
+        
+    Label:
+        text: "Date:"
+        pos_hint: {"x": 0, "y": -0.1375}
+        
+    TextInput
+        id: date
+        size_hint: 0.15, 0.05
+        pos_hint: {"x": 0.55, "y": 0.335}
+        
+    Label:
+        text: "(YYYY-MM-DD)"
+        pos_hint: {"x": 0.3, "y": -0.1375}
+        
+    Button:
+        text: "Enter score/shoot"
+        size_hint: 0.2, 0.1
+        pos_hint: {"x": 0.4, "y": 0.2}
+        
+    Label:
+        id: error
+        text: ""
+        pos_hint: {"x":0, "y":-0.4}
+        
                                                    
 """)
 
@@ -1043,7 +1084,12 @@ class EnterScoreScreen(Screen):
             self.ids.error.text = "Please make sure you have chosen the correct shoot format"
             return
 
-        if int(float(self.score)) > self.max:
+        try:
+            if int(float(self.score)) > self.max:
+                self.ids.error.text = "Please make sure you have chosen the correct shoot format"
+                return
+
+        except ValueError:
             self.ids.error.text = "Please make sure you have chosen the correct shoot format"
             return
 
@@ -1061,7 +1107,11 @@ class EnterDetailsScreen(Screen):
         self.weather = ""
         self.range = ""
         self.target = 0
+        self.date = ""
         self.setupID = 0
+
+    # def get_dist(self, checkbox, checked):
+
 
     # def get_details(self, ):
 
