@@ -41,7 +41,7 @@ class Database:
                                                 range varchar(128),
                                                 target int,
                                                 date DATE,
-                                                PRIMARY KEY (userID),
+                                                FOREIGN KEY (userID) REFERENCES Users(userID),
                                                 FOREIGN KEY (setupID) REFERENCES Setups(setupID)
                                                 );''')
 

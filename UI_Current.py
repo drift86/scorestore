@@ -9,6 +9,8 @@ import hashlib
 
 import sqlite3
 
+from datetime import date
+
 with sqlite3.connect('scorestore.db') as db:
     cursor = db.cursor()
 
@@ -208,7 +210,7 @@ Builder.load_string("""
         pos_hint: {"x": 0.3, "y": 0.6}
         text: "Enter new score"
         on_press:
-            root.manager.current = 'enter-score'
+            root.enter_score()
         
     Button:
         font_size: 30
@@ -673,24 +675,45 @@ Builder.load_string("""
         text: "Date:"
         pos_hint: {"x": 0, "y": -0.1375}
         
-    TextInput
-        id: date
-        size_hint: 0.15, 0.05
+    TextInput:
+        id: day
+        size_hint: 0.05, 0.05
         pos_hint: {"x": 0.55, "y": 0.335}
         
+    TextInput:
+        id: month
+        size_hint: 0.05, 0.05
+        pos_hint: {"x": 0.625, "y": 0.335}
+        
+    TextInput:
+        id: year
+        size_hint: 0.075, 0.05
+        pos_hint: {"x": 0.7, "y": 0.335}
+        
     Label:
-        text: "(YYYY-MM-DD)"
-        pos_hint: {"x": 0.3, "y": -0.1375}
+        text: "(Day, Month, Year)"
+        pos_hint: {"x": 0.1, "y": -0.22}
+        
+    Label:
+        text: "Setup ID:"
+        pos_hint: {"x": -0.3, "y": -0.22}
+        
+    TextInput:
+        id: setup_id
+        size_hint: 0.1, 0.05
+        pos_hint: {"x": 0.3, "y": 0.252}
         
     Button:
         text: "Enter score/shoot"
         size_hint: 0.2, 0.1
-        pos_hint: {"x": 0.4, "y": 0.2}
+        pos_hint: {"x": 0.4, "y": 0.12}
+        on_press:
+            root.get_details(setup_id.text, ammo.text, light.text, weather.text, range.text, target.text, day.text, month.text, year.text)
         
     Label:
         id: error
         text: ""
-        pos_hint: {"x":0, "y":-0.4}
+        pos_hint: {"x":0, "y":-0.42}
         
                                                    
 """)
@@ -865,6 +888,10 @@ class HomeScreen(Screen):
     def go_setup(self):
         setup_screen.user_id = self.user_id
 
+    def enter_score(self):
+        enter_details.userID = self.user_id
+        sm.current = 'enter-score'
+
 
 class SetupsMenuScreen(Screen):
     def __init__(self, **kw):
@@ -939,6 +966,10 @@ class ViewSetupScreen(Screen):
         setups = str(setups)
         setups = setups.strip("[]")
         setups = setups.strip("()")
+        setups = setups.strip(",")
+        setups = setups.replace(",", " ")
+        setups = setups.replace("(", " ")
+        setups = setups.replace(")", " ")
         if len(setups) == 0:
             setups = "No setups in DB"
             return setups
@@ -968,10 +999,10 @@ class ViewSetupScreen(Screen):
             self.ids.error.text = "Cannot find that setup, check the search term"
             return
 
-        self.ids.rifle.text += rifle
-        self.ids.jacket.text += jacket
-        self.ids.sling.text += sling
-        self.ids.glove.text += glove
+        self.ids.rifle.text = rifle
+        self.ids.jacket.text = jacket
+        self.ids.sling.text = sling
+        self.ids.glove.text = glove
 
 
 class EditSetupScreen(Screen):
@@ -1093,6 +1124,7 @@ class EnterScoreScreen(Screen):
             self.ids.error.text = "Please make sure you have chosen the correct shoot format"
             return
 
+        self.score = float(self.score)
         enter_details.score = self.score
         sm.current = 'enter_details'
 
@@ -1109,11 +1141,85 @@ class EnterDetailsScreen(Screen):
         self.target = 0
         self.date = ""
         self.setupID = 0
+        self.userID = 0
+        self.ids.three.bind(active=self.get_dist)
+        self.ids.five.bind(active=self.get_dist)
+        self.ids.six.bind(active=self.get_dist)
+        self.ids.nine.bind(active=self.get_dist)
+        self.ids.ten.bind(active=self.get_dist)
 
-    # def get_dist(self, checkbox, checked):
+    def get_dist(self, checkbox, checked):
+        self.distance = 0
+        if not checked:
+            self.distance = 0
+            return
 
+        if checkbox == self.ids.three:
+            self.distance = 300
+            return
 
-    # def get_details(self, ):
+        if checkbox == self.ids.five:
+            self.distance = 500
+            return
+
+        if checkbox == self.ids.six:
+            self.distance = 600
+            return
+
+        if checkbox == self.ids.nine:
+            self.distance = 900
+            return
+
+        if checkbox == self.ids.ten:
+            self.distance = 1000
+            return
+
+        else:
+            self.distance = 0
+            return
+
+    def get_details(self, setupidText, ammoText, lightText, weatherText, rangeText, targetNum, dayText, monthText, yearText):
+        self.ids.error.text = ""
+        try:
+            self.setupID = int(setupidText)
+            self.ammo = ammoText
+            self.light = lightText
+            self.weather = weatherText
+            self.range = rangeText
+            self.target = int(targetNum)
+            self.date = date(int(yearText), int(monthText), int(dayText))
+        except ValueError:
+            self.ids.error.text = "Please make sure you have the correct format for all fields"
+
+        if self.distance == 0:
+            self.ids.error.text = "Please make sure you have selected the correct distance"
+            return
+
+        for i in (self.userID, self.setupID, self.distance, self.ammo, self.light, self.weather, self.range, self.target):
+            try:
+                if len(i) <= 0:
+                    self.ids.error.text = "Please make sure all fields are filled in correctly"
+                    return
+
+            except:
+                if i <= 0:
+                    self.ids.error.text = "Please make sure all fields are filled in correctly"
+                    return
+
+        try:
+            cursor.execute('''INSERT INTO Scores(userID, setupID, score, distance, ammo, light, weather, range, target, 
+                           date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                           (self.userID, self.setupID, self.score, self.distance, self.ammo, self.light, self.weather,
+                            self.range, self.target, self.date))
+
+        except sqlite3.OperationalError as e:
+            print(e)
+            self.ids.error.text = "Please make sure you have entered all info in the correct format"
+            return
+
+        db.commit()
+        sm.current = 'home'
+
 
 login_screen = LoginScreen()
 register_screen = RegisterScreen()
