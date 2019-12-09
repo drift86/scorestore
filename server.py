@@ -5,8 +5,8 @@ import pickle
 with sqlite3.connect('scorestore.db') as db:
     cursor = db.cursor()
 
-host = "10.101.0.70"
-port = 5000
+host = "10.37.6.61"
+port = 5432
 
 mySocket = socket.socket()
 mySocket.bind((host, port))
@@ -24,9 +24,22 @@ def main():
     values = conn.recv(1024)
     values = pickle.loads(values)
 
+    print(query, values)
     cursor.execute(query, values)
-    db.commit()
+    result = cursor.fetchall()
+    conn.send("True".encode())
 
+    if len(result) > 0:
+        conn.send("True".encode())
+        result = str(result)
+
+        conn.send(result.encode())
+
+    else:
+        db.commit()
+        main()
+
+    db.commit()
     main()
 
 
