@@ -1209,8 +1209,8 @@ class EnterDetailsScreen(Screen):
         try:
             cursor.execute('''INSERT INTO Scores(userID, setupID, score, distance, ammo, light, weather, range, target, 
                            date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                           (self.userID, self.setupID, self.score, self.distance, self.ammo, self.light, self.weather,
-                            self.range, self.target, self.date))
+                           [self.userID, self.setupID, self.score, self.distance, self.ammo, self.light, self.weather,
+                            self.range, self.target, self.date])
 
         except sqlite3.OperationalError as e:
             print(e)
