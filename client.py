@@ -1,45 +1,45 @@
 import socket
 import pickle
+from datetime import date
 
-def main():
-    host = '10.37.6.61'
-    port = 5432
 
-    mySocket = socket.socket()
-    mySocket.connect((host, port))
+def main(query, values):
 
-    userID = 1001
-    setupID = 1
-    score = 50.4
-    distance = 500
-    ammo = "GGG"
-    light = "Good"
-    weather = "Good"
-    range = "Bisley"
-    target = 54
-    date = "21/02/2019"
-
-    mySocket.send('''SELECT userID FROM Setups WHERE setupID LIKE ?'''.encode())
-    val = bool(mySocket.recv(1024).decode())
-    if val is not True:
-        return
-
-    values = [setupID]
-    values = pickle.dumps(values)
-    mySocket.send(values)
-
-    print("hello")
+    mySocket.send(query.encode())
     val = bool(mySocket.recv(1024).decode())
     print(val)
     if val is not True:
-        print("hello")
         return
 
+    values = pickle.dumps(values)
+    mySocket.send(values)
 
-    print("hello")
-    results = mySocket.recv(1024).decode()
-    print(results)
+    print("hello1")
+    val = bool(mySocket.recv(1024).decode())
+    print(val)
+    if val is not True:
+        print("hello2")
+        return
 
+    print("hello3")
+    results = mySocket.recv(1024)
+    results = pickle.loads(results)
+    return results
+
+
+host = '127.0.0.1'
+port = 5431
+
+mySocket = socket.socket()
+mySocket.connect((host, port))
+
+query1 = '''SELECT setupID FROM Setups WHERE userID LIKE ?'''
+values1 = [1001]
+
+
+query2 = '''INSERT INTO Scores(userID, setupID, score, distance, ammo, light, weather, range, target, date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+values2 = [1001, 2, 49.5, 300, "RWS", "Good", "Warm", "Connaught A", 18, date(2019, 8, 12)]
 
 if __name__ == '__main__':
-    main()
+    main(query2, values2)
