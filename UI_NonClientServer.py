@@ -9,22 +9,12 @@ import hashlib
 
 import sqlite3
 
-import socket
-import pickle
-
-
 from datetime import date
 
 with sqlite3.connect('scorestore.db') as db:
     cursor = db.cursor()
 
 kivy.require("1.11.0")
-
-host = '127.0.0.1'
-port = 5432
-
-mySocket = socket.socket()
-mySocket.connect((host, port))
 
 Builder.load_string("""
 <RegisterScreen>
@@ -33,7 +23,7 @@ Builder.load_string("""
         source: 'scorestorelogo.png'
         size_hint: 0.8, 0.8
         pos_hint: {"x":0.1 , "y":0.535}
- 
+
     Label:
         text: "Name"
         pos_hint: {"x":-0.3, "y":0.275}
@@ -70,7 +60,7 @@ Builder.load_string("""
         id: clubid
         size_hint: 0.5, 0.05
         pos_hint: {"x":0.3, "y":0.501}
-            
+
     Button:
         font_size: 30
         size_hint: 0.4, 0.1
@@ -78,19 +68,19 @@ Builder.load_string("""
         text: "Register Account"
         on_press: 
             root.register_account(name.text, email.text, password.text, clubid.text)
-            
+
     Button:
         font_size: 20
         size_hint: 0.15, 0.05
         pos_hint: {"x":0.82, "y":0.500}
         text: "Find Club ID"
         on_press: root.manager.current = 'find-club'
-            
+
     Label:
         id: error
         text: ""
         pos_hint: {"x": 0, "y": -0.2}
-            
+
     Button:
         font_size: 20
         text: "Return to login"
@@ -144,43 +134,43 @@ Builder.load_string("""
         text: "Register"
         on_press: 
             root.manager.current = 'register'
-            
+
     Label:
         id: error
         text: ""
         pos_hint: {"x":0, "y":-0.4}
-                                    
+
 <FindClubScreen>
     name: 'find-club'
     Image:
         source: 'scorestorelogo.png'
         size_hint: 0.8, 0.8
         pos_hint: {"x":0.1 , "y":0.535}
-    
+
     Label:
         text: "Search club name"
         pos_hint: {"x":-0.25, "y":0.275}
-        
+
     TextInput:
         id: club
         size_hint: 0.5, 0.1
         pos_hint: {"x":0.35, "y":0.7}
-        
+
     Label:
         id: no_clubs
         text: ''
         pos_hint: {"x": 0.05, "y": 0}
-        
+
     Label:
         id: index
         text: ""
         pos_hint: {"x": 0.05, "y": 0.07}
-        
+
     Label:
         id: result_list
         text: ""
         pos_hint: {"x": 0.08, "y": -0.05}
-        
+
     Button:
         font_size: 30
         size_hint: 0.3, 0.075
@@ -188,11 +178,11 @@ Builder.load_string("""
         text: "Search Clubs"
         on_press: 
             root.get_club(club.text)
-            
+
     Label:
         text: "Can't see your club? Try changing your search terms"  
         pos_hint: {"x": 0.05, "y": -0.4}    
-        
+
     Button:
         font_size: 30
         size_hint: 0.3, 0.075
@@ -207,13 +197,13 @@ Builder.load_string("""
         source: 'scorestorelogo.png'
         size_hint: 0.8, 0.8
         pos_hint: {"x":0.1 , "y":0.535}
-        
+
     Label:
         id: user
         text: "Logged in as: "
         font_size: 15
         pos_hint: {"x": 0.35, "y": 0.35}
-        
+
     Button:
         font_size: 30
         size_hint: 0.4, 0.1
@@ -221,13 +211,13 @@ Builder.load_string("""
         text: "Enter new score"
         on_press:
             root.enter_score()
-        
+
     Button:
         font_size: 30
         size_hint: 0.4, 0.1
         pos_hint: {"x": 0.3, "y": 0.4}
         text: "View scores"
-        
+
     Button:
         font_size: 12
         size_hint: 0.2, 0.05
@@ -242,7 +232,7 @@ Builder.load_string("""
         source: 'scorestorelogo.png'
         size_hint: 0.8, 0.8
         pos_hint: {"x":0.1 , "y":0.535}
-    
+
     Button:
         font_size: 25
         size_hint: 0.3, 0.1
@@ -250,7 +240,7 @@ Builder.load_string("""
         text: "Create new setup"
         on_press:
             root.manager.current = 'new_setup'
-        
+
     Button:
         font_size: 25
         size_hint: 0.3, 0.1
@@ -258,7 +248,7 @@ Builder.load_string("""
         text: "View setups"
         on_press:
             root.view_setups()
-        
+
     Button:
         font_size: 25
         size_hint: 0.3, 0.1
@@ -266,7 +256,7 @@ Builder.load_string("""
         text: "Edit setup"
         on_press:
             root.edit_setups()
-        
+
     Button:
         font_size: 15
         size_hint: 0.1, 0.05
@@ -274,23 +264,23 @@ Builder.load_string("""
         text: "Home"
         on_press:
             root.manager.current = 'home'        
-    
+
 <NewSetupScreen>
     name: 'new_setup'
     Image:
         source: 'scorestorelogo.png'
         size_hint: 0.8, 0.8
         pos_hint: {"x":0.1 , "y":0.535}
-        
+
     Label:
         text: "Rifle"
         pos_hint: {"x":-0.3, "y":0.275}
-        
+
     Label:
         text: "(Suggested: Name and serial num)"
         font_size: 12.5
         pos_hint: {"x":-0.33, "y": 0.255}
-        
+
     TextInput:
         id: rifle
         size_hint: 0.5, 0.05
@@ -322,7 +312,7 @@ Builder.load_string("""
         id: glove
         size_hint: 0.5, 0.05
         pos_hint: {"x":0.3, "y":0.501}
-        
+
     Button:
         font_size: 30
         size_hint: 0.3, 0.1
@@ -330,12 +320,12 @@ Builder.load_string("""
         text: "Add setup"        
         on_press:
             root.add_new_setup(rifle.text, jacket.text, sling.text, glove.text)
-       
+
     Label:
         id: error
         text: ""
         pos_hint: {"x":0, "y":-0.4}
-        
+
     Button:
         font_size: 15
         size_hint: 0.1, 0.05
@@ -343,23 +333,23 @@ Builder.load_string("""
         text: "Home"
         on_press:
             root.manager.current = 'home'  
-         
+
 <ViewSetupScreen>
     name: 'view_setups'
     Image:
         source: 'scorestorelogo.png'
         size_hint: 0.8, 0.8
         pos_hint: {"x":0.1 , "y":0.535}
-    
+
     Label:
         id: id_view
         text: "" 
         pos_hint: {"x": -0.15, "y": 0.3}
-        
+
     Label
         text: "Setup ID:"
         pos_hint: {"x": -0.1, "y":0.25}
-        
+
     TextInput:
         id: setup_id_choice
         size_hint: 0.1, 0.04
@@ -372,40 +362,40 @@ Builder.load_string("""
         text: "View setup"
         on_press:
             root.show_setup(setup_id_choice.text)
-            
-        
+
+
     Label:
         text: "Rifle:"
         pos_hint: {"x":-0.3, "y":0.155}
-        
+
     Label:
         id:rifle
         pos_hint: {"x":0, "y":0.155}
-        
+
     Label:
         text: "Jacket:"
         pos_hint: {"x":-0.3, "y":0.0825}
-        
+
     Label:
         id: jacket
         pos_hint: {"x":0, "y":0.0825}
-        
+
     Label:
         text: "Sling setting:"
         pos_hint: {"x":-0.3, "y":0.01}
-        
+
     Label:
         id: sling
         pos_hint: {"x":0, "y":0.01}
-        
+
     Label:
         text: "Glove:"
         pos_hint: {"x":-0.3, "y":-0.0722}
-        
+
     Label:
         id: glove
         pos_hint: {"x":0, "y":-0.0722}
-        
+
     Button:
         font_size: 15
         size_hint: 0.1, 0.05
@@ -413,28 +403,28 @@ Builder.load_string("""
         text: "Home"
         on_press:
             root.manager.current = 'home'
-            
+
     Label:
         id: error
         text: ""
         pos_hint: {"x":0, "y":-0.4}
-   
+
 <EditSetupScreen>
     name: 'edit_setups'
     Image:
         source: 'scorestorelogo.png'
         size_hint: 0.8, 0.8
         pos_hint: {"x":0.1 , "y":0.535}
-    
+
     Label:
         id: id_view
         text: "" 
         pos_hint: {"x": -0.15, "y": 0.3}
-        
+
     Label:
         text: "Setup ID:"
         pos_hint: {"x": -0.1, "y":0.25}
-        
+
     TextInput:
         id: setup_id_choice
         size_hint: 0.1, 0.04
@@ -447,47 +437,47 @@ Builder.load_string("""
         text: "View setup"
         on_press:
             root.show_setup(setup_id_choice.text)
-        
+
     Label:
         text: "Rifle:"
         pos_hint: {"x":-0.3, "y":0.155}
-        
+
     TextInput:
         id:rifle
         text: ""
         pos_hint: {"x":0.3, "y":0.645}
         size_hint: 0.5, 0.05
-        
+
     Label:
         text: "Jacket:"
         pos_hint: {"x":-0.3, "y":0.0825}
-        
+
     TextInput:
         id: jacket
         text: ""
         pos_hint: {"x":0.3, "y":0.565}
         size_hint: 0.5, 0.05
-        
+
     Label:
         text: "Sling setting:"
         pos_hint: {"x":-0.3, "y":0.01}
-        
+
     TextInput:
         id: sling
         text: ""
         pos_hint: {"x":0.3, "y":0.485}
         size_hint: 0.5, 0.05
-        
+
     Label:
         text: "Glove:"
         pos_hint: {"x":-0.3, "y":-0.0722}
-        
+
     TextInput:
         id: glove
         text: ""
         pos_hint: {"x":0.3, "y":0.405}
         size_hint: 0.5, 0.05
-        
+
     Button:
         font_size: 15
         size_hint: 0.1, 0.05
@@ -495,12 +485,12 @@ Builder.load_string("""
         text: "Home"
         on_press:
             root.manager.current = 'home'
-            
+
     Label:
         id: error
         text: ""
         pos_hint: {"x":0, "y":-0.4}
-        
+
     Button:
         font_size: 20
         size_hint:0.2, 0.1
@@ -508,57 +498,57 @@ Builder.load_string("""
         text: "Commit Changes"
         on_press:
             root.commit_changes(rifle.text, jacket.text, sling.text, glove.text)
-                        
+
 <EnterScoreScreen>
     name: 'enter-score'
     Image:
         source: 'scorestorelogo.png'
         size_hint: 0.8, 0.8
         pos_hint: {"x":0.1 , "y":0.535}
-        
+
     Label:
         pos_hint: {"x":0, "y": 0.3}
         text: "Enter your score and format:"
-    
+
     Label:
         text: "2 & 7"
         pos_hint: {"x": -0.1, "y": 0.2}
-           
+
     CheckBox:
         id: seven
         pos_hint: {"x": 0.385, "y": 0.65}
         size_hint: 0.03, 0.03
-        
+
     Label:
         text: "2 & 10"
         pos_hint: {"x": 0, "y": 0.2}
-        
+
     CheckBox:
         id: ten
         pos_hint: {"x": 0.485, "y": 0.65}
         size_hint: 0.03, 0.03
-        
+
     Label:
         text: "2 & 15"
         pos_hint: {"x": 0.1, "y": 0.2}
-        
+
     CheckBox:
         id: fifteen
         pos_hint: {"x": 0.585, "y": 0.65}
         size_hint: 0.03, 0.03
-        
+
     TextInput:
         id: score
         font_size: 30
         size_hint: 0.12, 0.08
         pos_hint: {"x": 0.44, "y":0.5}
-        
+
     Button:
         text: "Continue"
         size_hint: 0.2, 0.1
         pos_hint: {"x": 0.4, "y": 0.3}
         on_press: root.get_score(score.text)
-    
+
     Button:
         font_size: 15
         size_hint: 0.1, 0.05
@@ -566,7 +556,7 @@ Builder.load_string("""
         text: "Home"
         on_press:
             root.manager.current = 'home'
-            
+
     Label:
         id: error
         text: ""
@@ -578,64 +568,64 @@ Builder.load_string("""
         source: 'scorestorelogo.png'
         size_hint: 0.8, 0.8
         pos_hint: {"x":0.1 , "y":0.535}
-        
+
     Label:
         pos_hint: {"x":0, "y": 0.35}
         text: "Enter the details of your shoot:"
-    
+
     Label:
         text: "Distance"
         pos_hint: {"x": -0.3, "y": 0.3}
-        
+
     Label
         text: "(Yards)"
         pos_hint: {"x": -0.3, "y": 0.265}
-        
+
     Label:
         text: "300"
         pos_hint: {"x": -0.15, "y": 0.3}
-           
+
     CheckBox:
         id: three
         pos_hint: {"x": 0.335, "y": 0.75}
         size_hint: 0.03, 0.03
-        
+
     Label:
         text: "500"
         pos_hint: {"x": -0.05, "y": 0.3}
-           
+
     CheckBox:
         id: five
         pos_hint: {"x": 0.435, "y": 0.75}
         size_hint: 0.03, 0.03
-        
+
     Label:
         text: "600"
         pos_hint: {"x": 0.05, "y": 0.3}
-        
+
     CheckBox:
         id: six
         pos_hint: {"x": 0.535, "y": 0.75}
         size_hint: 0.03, 0.03
-        
+
     Label:
         text: "900"
         pos_hint: {"x": 0.15, "y": 0.3}
-        
+
     CheckBox:
         id: nine
         pos_hint: {"x": 0.635, "y": 0.75}
         size_hint: 0.03, 0.03
-        
+
     Label:
         text: "1000"
         pos_hint: {"x": 0.25, "y": 0.3}
-           
+
     CheckBox:
         id: ten
         pos_hint: {"x": 0.735, "y": 0.75}
         size_hint: 0.03, 0.03
-        
+
     Label:
         text: "Ammo:"
         pos_hint: {"x":-0.3, "y":0.1925}
@@ -662,70 +652,70 @@ Builder.load_string("""
         id: weather
         size_hint: 0.5, 0.05
         pos_hint: {"x":0.3, "y":0.501}   
-        
+
     Label:
         text: "Range:"
         pos_hint: {"x": -0.3, "y": -0.055}
-        
+
     TextInput:
         id: range
         size_hint: 0.5, 0.05
         pos_hint: {"x": 0.3, "y": 0.418} 
-    
+
     Label:
         text: "Target/Lane"
         pos_hint: {"x": -0.3, "y": -0.1375}
-        
+
     TextInput:
         id: target
         size_hint: 0.1, 0.05
         pos_hint: {"x": 0.3, "y": 0.335}
-        
+
     Label:
         text: "Date:"
         pos_hint: {"x": 0, "y": -0.1375}
-        
+
     TextInput:
         id: day
         size_hint: 0.05, 0.05
         pos_hint: {"x": 0.55, "y": 0.335}
-        
+
     TextInput:
         id: month
         size_hint: 0.05, 0.05
         pos_hint: {"x": 0.625, "y": 0.335}
-        
+
     TextInput:
         id: year
         size_hint: 0.075, 0.05
         pos_hint: {"x": 0.7, "y": 0.335}
-        
+
     Label:
         text: "(Day, Month, Year)"
         pos_hint: {"x": 0.1, "y": -0.22}
-        
+
     Label:
         text: "Setup ID:"
         pos_hint: {"x": -0.3, "y": -0.22}
-        
+
     TextInput:
         id: setup_id
         size_hint: 0.1, 0.05
         pos_hint: {"x": 0.3, "y": 0.252}
-        
+
     Button:
         text: "Enter score/shoot"
         size_hint: 0.2, 0.1
         pos_hint: {"x": 0.4, "y": 0.12}
         on_press:
             root.get_details(setup_id.text, ammo.text, light.text, weather.text, range.text, target.text, day.text, month.text, year.text)
-        
+
     Label:
         id: error
         text: ""
         pos_hint: {"x":0, "y":-0.42}
-        
-                                                   
+
+
 """)
 
 
@@ -738,22 +728,9 @@ class LoginScreen(Screen):
         self.user_name = ""
         self.user_id = 0
 
-    def exec_sql(self, query, values):
-        mySocket.send(query.encode())
-        val = bool(mySocket.recv(1024).decode())
-        if val is not True:
-            return
-        values = pickle.dumps(values)
-        mySocket.send(values)
-        results = mySocket.recv(1024)
-        results = pickle.loads(results)
-        if len(results) > 0:
-            return results
-        else:
-            return
-
     def get_password(self):
-        user_pw = self.exec_sql('''SELECT password FROM Users WHERE email LIKE ?''', (self.email,))
+        cursor.execute('''SELECT password FROM Users WHERE email LIKE ?''', (self.email,))
+        user_pw = cursor.fetchall()
         user_pw = str(user_pw)
         user_pw = user_pw.strip("[]")
         user_pw = user_pw.strip("()")
@@ -882,7 +859,7 @@ class FindClubScreen(Screen):
                 self.club.remove(i)
 
         for i in self.search_terms:
-            self.results += cursor.execute('''SELECT * FROM Clubs WHERE name LIKE ?''', ('%'+i+'%',))
+            self.results += cursor.execute('''SELECT * FROM Clubs WHERE name LIKE ?''', ('%' + i + '%',))
 
         self.ids.no_clubs.text = ""
         self.ids.index.text = ""
@@ -951,7 +928,7 @@ class NewSetupScreen(Screen):
         setup_id = last_sid + 1
         return setup_id
 
-    def add_new_setup(self, rifleText,  jacketText, slingText, gloveText):
+    def add_new_setup(self, rifleText, jacketText, slingText, gloveText):
         self.ids.error.text = ""
         try:
             self.rifle = rifleText
@@ -1201,7 +1178,8 @@ class EnterDetailsScreen(Screen):
             self.distance = 0
             return
 
-    def get_details(self, setupidText, ammoText, lightText, weatherText, rangeText, targetNum, dayText, monthText, yearText):
+    def get_details(self, setupidText, ammoText, lightText, weatherText, rangeText, targetNum, dayText, monthText,
+                    yearText):
         self.ids.error.text = ""
         try:
             self.setupID = int(setupidText)
@@ -1218,7 +1196,8 @@ class EnterDetailsScreen(Screen):
             self.ids.error.text = "Please make sure you have selected the correct distance"
             return
 
-        for i in (self.userID, self.setupID, self.distance, self.ammo, self.light, self.weather, self.range, self.target):
+        for i in (
+        self.userID, self.setupID, self.distance, self.ammo, self.light, self.weather, self.range, self.target):
             try:
                 if len(i) <= 0:
                     self.ids.error.text = "Please make sure all fields are filled in correctly"
