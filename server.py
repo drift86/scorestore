@@ -12,13 +12,15 @@ mySocket = socket.socket()
 mySocket.bind((host, port))
 
 
-def main():
-    mySocket.listen()
-    conn, addr = mySocket.accept()
-    print("Connection from:" + str(addr))
+def main(conn):
     query = conn.recv(1024).decode()
     if not query:
-        main()
+        try:
+            main(conn)
+
+        except:
+            init()
+
     conn.send("True".encode())
     values = conn.recv(1024)
     values = pickle.loads(values)
@@ -27,8 +29,19 @@ def main():
     results = pickle.dumps(results)
     conn.send(results)
     db.commit()
-    main()
+    try:
+        main(conn)
+
+    except:
+        init()
+
+
+def init():
+    mySocket.listen()
+    conn, addr = mySocket.accept()
+    print("Connection from:" + str(addr))
+    main(conn)
 
 
 if __name__ == '__main__':
-    main()
+    init()

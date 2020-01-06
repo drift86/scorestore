@@ -7,16 +7,12 @@ from kivy.config import Config
 
 import hashlib
 
-import sqlite3
 
 import socket
 import pickle
 
 
 from datetime import date
-
-with sqlite3.connect('scorestore.db') as db:
-    cursor = db.cursor()
 
 kivy.require("1.11.0")
 
@@ -762,8 +758,7 @@ class LoginScreen(Screen):
         return user_pw
 
     def get_user_name(self):
-        cursor.execute('''SELECT name FROM Users WHERE email LIKE ?''', (self.email,))
-        user_name = cursor.fetchall()
+        user_name = self.exec_sql('''SELECT name FROM Users WHERE email LIKE ?''', (self.email,))
         user_name = str(user_name)
         user_name = user_name.strip("[]")
         user_name = user_name.strip("()")
@@ -772,8 +767,7 @@ class LoginScreen(Screen):
         return user_name
 
     def get_user_id(self):
-        cursor.execute('''SELECT userID FROM Users WHERE email LIKE ?''', (self.email,))
-        user_id = cursor.fetchall()
+        user_id = self.exec_sql('''SELECT userID FROM Users WHERE email LIKE ?''', (self.email,))
         user_id = str(user_id)
         user_id = user_id.strip("[]")
         user_id = user_id.strip("()")
@@ -819,6 +813,22 @@ class RegisterScreen(Screen):
         self.last_user = []
         self.last_uid = 0
 
+    def exec_sql(self, query, values):
+        print(query, values)
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        print(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
+
     def create_uid(self, last_user):
         for i in last_user:
             last_uid = i
@@ -838,25 +848,24 @@ class RegisterScreen(Screen):
             self.email = emailText.lower()
             self.password = passwordText
             self.clubID = int(clubidText)
-            self.userID = self.create_uid(cursor.execute('''SELECT max(userID) as userID FROM Users;'''))
+            self.userID = self.create_uid(self.exec_sql('''SELECT max(userID) as userID FROM Users;''', []))
 
         except ValueError:
             self.ids.error.text = "Invalid input check format of inputted info"
             return
 
-        cursor.execute('''SELECT email FROM Users WHERE email LIKE ?''', (self.email,))
-        already = cursor.fetchall()
+        already = self.exec_sql('''SELECT email FROM Users WHERE email LIKE ?''', (self.email,))
+        print(already)
 
-        if len(already) > 0:
+        if already:
             self.ids.error.text = "An account with that email already exists"
             return
 
         self.password = hashlib.md5(self.password.encode())
         self.password = self.password.hexdigest()
 
-        cursor.execute('''INSERT INTO Users(userID, name, clubID, email, password) VALUES (?,?,?,?,?)''',
-                       (self.userID, self.fullname, self.clubID, self.email, self.password))
-        db.commit()
+        self.exec_sql('''INSERT INTO Users(userID, name, clubID, email, password) VALUES (?,?,?,?,?)''',
+                     (self.userID, self.fullname, self.clubID, self.email, self.password))
 
         sm.current = 'login'
 
@@ -868,6 +877,20 @@ class FindClubScreen(Screen):
         self.results = []
         self.search_terms = []
         self.result_labels = []
+
+    def exec_sql(self, query, values):
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
 
     def get_club(self, clubText):
         self.club = clubText
@@ -882,7 +905,7 @@ class FindClubScreen(Screen):
                 self.club.remove(i)
 
         for i in self.search_terms:
-            self.results += cursor.execute('''SELECT * FROM Clubs WHERE name LIKE ?''', ('%'+i+'%',))
+            self.results += self.exec_sql('''SELECT * FROM Clubs WHERE name LIKE ?''', ('%'+i+'%',))
 
         self.ids.no_clubs.text = ""
         self.ids.index.text = ""
@@ -940,9 +963,22 @@ class NewSetupScreen(Screen):
         self.sling = ""
         self.glove = ""
 
+    def exec_sql(self, query, values):
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
+
     def new_setup_id(self):
-        cursor.execute('''SELECT max(setupID) as setupID FROM Setups;''')
-        last_sid = cursor.fetchall()
+        last_sid = self.exec_sql('''SELECT max(setupID) as setupID FROM Setups;''', [])
         last_sid = str(last_sid)
         last_sid = last_sid.strip("[]")
         last_sid = last_sid.strip("()")
@@ -969,10 +1005,9 @@ class NewSetupScreen(Screen):
             self.ids.error.text = "Invalid input check format of inputted info"
             return
 
-        cursor.execute('''INSERT INTO Setups(setupID, userID, rifle, jacket, sling_setting, glove)
+        self.exec_sql('''INSERT INTO Setups(setupID, userID, rifle, jacket, sling_setting, glove)
                         VALUES (?,?,?,?,?,?)''',
                        (self.setup_id, self.user_id, self.rifle, self.jacket, self.sling, self.glove))
-        db.commit()
 
         sm.current = 'setups'
 
@@ -984,6 +1019,20 @@ class ViewSetupScreen(Screen):
         self.user_name = ""
         self.setup_id = 0
         self.user_setups = []
+
+    def exec_sql(self, query, values):
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
 
     def format_setups(self, setups):
         setups = str(setups)
@@ -1002,16 +1051,14 @@ class ViewSetupScreen(Screen):
     def view_setup(self):
         self.user_name = home_screen.user_name
         self.user_id = home_screen.user_id
-        cursor.execute('''SELECT setupID FROM Setups WHERE userID LIKE ?''', (self.user_id,))
-        self.user_setups = cursor.fetchall()
+        self.user_setups = self.exec_sql('''SELECT setupID FROM Setups WHERE userID LIKE ?''', (self.user_id,))
         self.ids.id_view.text = str(self.user_name) + "'s setup IDs: " + self.format_setups(self.user_setups)
 
     def show_setup(self, setup_idText):
         self.ids.error.text = ""
         self.setup_id = setup_idText
-        cursor.execute('''SELECT rifle, jacket, sling_setting, glove FROM Setups WHERE setupID LIKE ?''',
-                       (self.setup_id,))
-        setup = cursor.fetchall()
+        setup = self.exec_sql('''SELECT rifle, jacket, sling_setting, glove FROM Setups WHERE setupID LIKE ?''',
+                             (self.setup_id,))
         try:
             rifle = setup[0][0]
             jacket = setup[0][1]
@@ -1036,6 +1083,20 @@ class EditSetupScreen(Screen):
         self.setup_id = 0
         self.user_setups = []
 
+    def exec_sql(self, query, values):
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
+
     def format_setups(self, setups):
         setups = str(setups)
         setups = setups.strip("[]")
@@ -1049,16 +1110,14 @@ class EditSetupScreen(Screen):
     def view_setup(self):
         self.user_name = home_screen.user_name
         self.user_id = home_screen.user_id
-        cursor.execute('''SELECT setupID FROM Setups WHERE userID LIKE ?''', (self.user_id,))
-        self.user_setups = cursor.fetchall()
+        self.user_setups = self.exec_sql('''SELECT setupID FROM Setups WHERE userID LIKE ?''', (self.user_id,))
         self.ids.id_view.text = str(self.user_name) + "'s setup IDs: " + self.format_setups(self.user_setups)
 
     def show_setup(self, setup_idText):
         self.ids.error.text = ""
         self.setup_id = setup_idText
-        cursor.execute('''SELECT rifle, jacket, sling_setting, glove FROM Setups WHERE setupID LIKE ?''',
-                       (self.setup_id,))
-        setup = cursor.fetchall()
+        setup = self.exec_sql('''SELECT rifle, jacket, sling_setting, glove FROM Setups WHERE setupID LIKE ?''',
+                             (self.setup_id,))
         try:
             rifle = setup[0][0]
             jacket = setup[0][1]
@@ -1075,8 +1134,7 @@ class EditSetupScreen(Screen):
         self.ids.glove.text += glove
 
     def commit_changes(self, rifleText, jacketText, slingText, gloveText):
-        cursor.execute('''SELECT userID FROM Setups WHERE setupID LIKE ?''', (self.setup_id,))
-        user_id = cursor.fetchall()
+        user_id = self.exec_sql('''SELECT userID FROM Setups WHERE setupID LIKE ?''', (self.setup_id,))
         user_id = str(user_id)
         user_id = user_id.strip("[]")
         user_id = user_id.strip("()")
@@ -1092,11 +1150,11 @@ class EditSetupScreen(Screen):
         sling = slingText
         glove = gloveText
 
-        cursor.execute('''DELETE FROM Setups WHERE setupID = ?''', (self.setup_id,))
-        cursor.execute('''INSERT INTO Setups(setupID, userID, rifle, jacket, sling_setting, glove)
+        self.exec_sql('''DELETE FROM Setups WHERE setupID = ?''', (self.setup_id,))
+        self.exec_sql('''INSERT INTO Setups(setupID, userID, rifle, jacket, sling_setting, glove)
                                 VALUES (?,?,?,?,?,?)''',
-                       (self.setup_id, self.user_id, rifle, jacket, sling, glove))
-        db.commit()
+                     (self.setup_id, self.user_id, rifle, jacket, sling, glove))
+
         sm.current = 'home'
 
 
@@ -1171,6 +1229,20 @@ class EnterDetailsScreen(Screen):
         self.ids.nine.bind(active=self.get_dist)
         self.ids.ten.bind(active=self.get_dist)
 
+    def exec_sql(self, query, values):
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
+
     def get_dist(self, checkbox, checked):
         self.distance = 0
         if not checked:
@@ -1230,17 +1302,15 @@ class EnterDetailsScreen(Screen):
                     return
 
         try:
-            cursor.execute('''INSERT INTO Scores(userID, setupID, score, distance, ammo, light, weather, range, target, 
+            self.exec_sql('''INSERT INTO Scores(userID, setupID, score, distance, ammo, light, weather, range, target, 
                            date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                            [self.userID, self.setupID, self.score, self.distance, self.ammo, self.light, self.weather,
                             self.range, self.target, self.date])
 
-        except sqlite3.OperationalError as e:
-            print(e)
+        except:
             self.ids.error.text = "Please make sure you have entered all info in the correct format"
             return
 
-        db.commit()
         sm.current = 'home'
 
 
