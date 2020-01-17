@@ -223,6 +223,8 @@ Builder.load_string("""
         size_hint: 0.4, 0.1
         pos_hint: {"x": 0.3, "y": 0.4}
         text: "View scores"
+        on_press:
+            root.view_score()
         
     Button:
         font_size: 12
@@ -721,7 +723,61 @@ Builder.load_string("""
         text: ""
         pos_hint: {"x":0, "y":-0.42}
         
-                                                   
+<ViewScoreHomeScreen>
+    name: 'view-score-home'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+    
+    Label:
+        text: "Most recent scores:"
+        pos_hint: {"x": -0.3, "y": 0.3}
+        
+    Label:
+        text: "Score    Distance       Date"
+        pos_hint: {"x": -0.035, "y": 0.275}
+        
+    Label:
+        id: most_recent_scores
+        text: ""
+        pos_hint: {"x": 0, "y": -0.025}  
+        
+    Button:
+        text: "Score analysis"
+        size_hint: 0.2, 0.1
+        pos_hint: {"x": 0.2, "y": 0.12}
+        on_press:
+            root.view_stats()
+        
+    Button:
+        text: "View all scores"
+        size_hint: 0.2, 0.1
+        pos_hint: {"x": 0.6, "y": 0.12}
+        
+    Button:
+        font_size: 15
+        size_hint: 0.1, 0.05
+        pos_hint: {"x": 0.05, "y": 0.05}
+        text: "Home"
+        on_press:
+            root.manager.current = 'home' 
+
+<ViewStatsScreen>
+    name: 'view-stats-home'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+        
+    Button:
+        font_size: 15
+        size_hint: 0.1, 0.05
+        pos_hint: {"x": 0.05, "y": 0.05}
+        text: "Home"
+        on_press:
+            root.manager.current = 'home'
+                                                  
 """)
 
 
@@ -937,6 +993,11 @@ class HomeScreen(Screen):
     def enter_score(self):
         enter_details.userID = self.user_id
         sm.current = 'enter-score'
+
+    def view_score(self):
+        view_score_home.userID = self.user_id
+        view_score_home.get_recent_scores()
+        sm.current = 'view-score-home'
 
 
 class SetupsMenuScreen(Screen):
@@ -1314,16 +1375,98 @@ class EnterDetailsScreen(Screen):
         sm.current = 'home'
 
 
+class ViewScoreHomeScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.userID = 0
+
+    def exec_sql(self, query, values):
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
+
+    def view_stats(self):
+        view_stats.userID = self.userID
+        view_stats.get_scores()
+        sm.current = 'view-stats-home'
+
+    def get_recent_scores(self):
+        self.ids.most_recent_scores.text = ""
+        most_recent = self.exec_sql('''SELECT score, distance, date FROM Scores WHERE userID LIKE ? ORDER BY date(date)
+                                       DESC LIMIT 8''', (self.userID,))
+        for i in most_recent:
+            for j in i:
+                j = str(j)
+                if len(j) == 4:
+                    self.ids.most_recent_scores.text += (j + "       ")
+
+                else:
+                    self.ids.most_recent_scores.text += (j+"        ")
+
+            self.ids.most_recent_scores.text += "\n\n"
+
+
+class ViewStatsScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.userID = 0
+        self.two_seven_scores = []
+        self.two_ten_scores = []
+        self.two_fifteen_scores = []
+
+    def exec_sql(self, query, values):
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
+
+    def get_scores(self):
+        self.two_seven_scores = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 0 AND 35.7 
+                                                 AND userID LIKE ?''', (self.userID,))
+        self.two_ten_scores = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 35.8 AND 50.99 
+                                                 AND userID LIKE ?''', (self.userID,))
+        self.two_fifteen_scores = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 51 AND 76 
+                                                 AND userID LIKE ?''', (self.userID,))
+        self.get_average()
+
+    def get_average(self):
+        for i in self.two_ten_scores:
+            i = str(i)
+            i = i.strip("()")
+            i = i.strip(",")
+            i = float(i)
+            print(i)
+
+
 login_screen = LoginScreen()
 register_screen = RegisterScreen()
 find_club = FindClubScreen()
 home_screen = HomeScreen()
 enter_score = EnterScoreScreen()
 enter_details = EnterDetailsScreen()
+view_score_home = ViewScoreHomeScreen()
 setup_screen = SetupsMenuScreen()
 new_setup = NewSetupScreen()
 view_setup = ViewSetupScreen()
 edit_setup = EditSetupScreen()
+view_stats = ViewStatsScreen()
 
 sm = ScreenManager(transition=FadeTransition())
 
@@ -1337,6 +1480,8 @@ sm.add_widget(setup_screen)
 sm.add_widget(new_setup)
 sm.add_widget(view_setup)
 sm.add_widget(edit_setup)
+sm.add_widget(view_score_home)
+sm.add_widget(view_stats)
 
 
 class ScoreStore(App):
