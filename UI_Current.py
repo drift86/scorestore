@@ -7,6 +7,8 @@ from kivy.config import Config
 
 import hashlib
 
+import math
+import statistics
 
 import socket
 import pickle
@@ -777,6 +779,32 @@ Builder.load_string("""
         text: "Home"
         on_press:
             root.manager.current = 'home'
+            
+    Label:
+        font_size: 20
+        text: "Averages    (2,7)    (2,10)    (2,15):"
+        pos_hint: {"x": 0, "y":0.275}
+        
+    Label:
+        font_size: 20
+        id: average
+        text: ""
+        pos_hint: {"x": 0, "y": 0.175}
+        
+    Label:
+        font_size: 20
+        text: "Standard deviation:"
+        pos_hint: {"x": 0, "y": 0}
+        
+    Label:
+        font_size: 20
+        id: st_dev
+        text: ""
+        pos_hint: {"x": 0, "y": -0.075}
+        
+    Label:
+        text: "(Most scores within this value of the mean)"
+        pos_hint: {"x": 0, "y": -0.15}
                                                   
 """)
 
@@ -1419,6 +1447,9 @@ class ViewStatsScreen(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
         self.userID = 0
+        self.two_seven_scores_temp = []
+        self.two_ten_scores_temp = []
+        self.two_fifteen_scores_temp = []
         self.two_seven_scores = []
         self.two_ten_scores = []
         self.two_fifteen_scores = []
@@ -1438,21 +1469,66 @@ class ViewStatsScreen(Screen):
             return
 
     def get_scores(self):
-        self.two_seven_scores = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 0 AND 35.7 
+        self.two_seven_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 0 AND 35.7 
                                                  AND userID LIKE ?''', (self.userID,))
-        self.two_ten_scores = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 35.8 AND 50.99 
+        self.two_ten_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 35.8 AND 50.99 
                                                  AND userID LIKE ?''', (self.userID,))
-        self.two_fifteen_scores = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 51 AND 76 
+        self.two_fifteen_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 51 AND 76 
                                                  AND userID LIKE ?''', (self.userID,))
-        self.get_average()
-
-    def get_average(self):
-        for i in self.two_ten_scores:
+        for i in self.two_seven_scores_temp:
             i = str(i)
             i = i.strip("()")
             i = i.strip(",")
             i = float(i)
-            print(i)
+            self.two_seven_scores.append(i)
+
+        for i in self.two_ten_scores_temp:
+            i = str(i)
+            i = i.strip("()")
+            i = i.strip(",")
+            i = float(i)
+            self.two_ten_scores.append(i)
+
+        for i in self.two_fifteen_scores_temp:
+            i = str(i)
+            i = i.strip("()")
+            i = i.strip(",")
+            i = float(i)
+            self.two_fifteen_scores.append(i)
+
+        self.get_stats()
+
+    def get_stats(self):
+        two_seven_mean = self.get_mean(self.two_seven_scores)
+        two_ten_mean = self.get_mean(self.two_ten_scores)
+        two_fifteen_mean = self.get_mean(self.two_fifteen_scores)
+        st_dev = self.get_stdev()
+        self.ids.average.text = str(two_seven_mean) + "       " + str(two_ten_mean) + "       " + str(two_fifteen_mean)
+        self.ids.st_dev.text = str(st_dev)
+
+    def get_stdev(self):
+        two_seven_stdev = statistics.stdev(self.two_seven_scores)
+        two_ten_stdev = statistics.stdev(self.two_ten_scores)
+        two_fifteen_stdev = statistics.stdev(self.two_fifteen_scores)
+        mean_stdev = statistics.mean([two_seven_stdev, two_ten_stdev, two_fifteen_stdev])
+        mean_stdev = round(mean_stdev, 1)
+        return mean_stdev
+
+    def get_mean(self, scores):
+        vees = []
+        points = []
+        for i in scores:
+            a, b = math.modf(i)
+            a = round(a, 1)
+            vees.append(a)
+            points.append(b)
+
+        mean_vees = statistics.mean(vees)
+        mean_vees = round(mean_vees, 1)
+        mean_points = statistics.mean(points)
+        mean_points = round(mean_points, 0)
+        mean = mean_points + mean_vees
+        return mean
 
 
 login_screen = LoginScreen()
