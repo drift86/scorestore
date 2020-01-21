@@ -14,7 +14,7 @@ import socket
 import pickle
 
 
-from datetime import date
+import datetime
 
 kivy.require("1.11.0")
 
@@ -756,6 +756,8 @@ Builder.load_string("""
         text: "View all scores"
         size_hint: 0.2, 0.1
         pos_hint: {"x": 0.6, "y": 0.12}
+        on_press:
+            root.view_all_scores()
         
     Button:
         font_size: 15
@@ -805,7 +807,44 @@ Builder.load_string("""
     Label:
         text: "(Most scores within this value of the mean)"
         pos_hint: {"x": 0, "y": -0.15}
-                                                  
+        
+    Label:
+        font_size: 10
+        text: "(Statistics may not be accurate until you have entered at least 10 scores)"
+        pos_hint: {"x": 0, "y": -0.3}
+        
+    Label:
+        id: error
+        text: ""
+        pos_hint: {"x":0, "y":-0.42}
+    
+<ViewAllScoresScreen>
+    name: 'view-all-scores'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+        
+    Button:
+        font_size: 15
+        size_hint: 0.1, 0.05
+        pos_hint: {"x": 0.05, "y": 0.05}
+        text: "Home"
+        on_press:
+            root.manager.current = 'home'
+            
+    Label:
+        text: "Score    Distance    Weather    Light    Ammo    Range    Target     Date"
+        pos_hint: {"x": 0, "y": 0.325}
+        
+    ScrollView:
+        size_hint: 0.6, 0.65
+        pos_hint: {"x": 0.2, "y": 0.125}
+        Label:
+            id: scores
+            size_hint: None, None
+            size: self.texture_size
+            text: ""                                              
 """)
 
 
@@ -1371,7 +1410,7 @@ class EnterDetailsScreen(Screen):
             self.weather = weatherText
             self.range = rangeText
             self.target = int(targetNum)
-            self.date = date(int(yearText), int(monthText), int(dayText))
+            self.date = datetime.date(int(yearText), int(monthText), int(dayText))
         except ValueError:
             self.ids.error.text = "Please make sure you have the correct format for all fields"
 
@@ -1426,6 +1465,11 @@ class ViewScoreHomeScreen(Screen):
         view_stats.userID = self.userID
         view_stats.get_scores()
         sm.current = 'view-stats-home'
+
+    def view_all_scores(self):
+        view_all_scores.userID = self.userID
+        view_all_scores.view_scores()
+        sm.current = 'view-all-scores'
 
     def get_recent_scores(self):
         self.ids.most_recent_scores.text = ""
@@ -1499,12 +1543,17 @@ class ViewStatsScreen(Screen):
         self.get_stats()
 
     def get_stats(self):
-        two_seven_mean = self.get_mean(self.two_seven_scores)
-        two_ten_mean = self.get_mean(self.two_ten_scores)
-        two_fifteen_mean = self.get_mean(self.two_fifteen_scores)
-        st_dev = self.get_stdev()
-        self.ids.average.text = str(two_seven_mean) + "       " + str(two_ten_mean) + "       " + str(two_fifteen_mean)
-        self.ids.st_dev.text = str(st_dev)
+        try:
+            two_seven_mean = self.get_mean(self.two_seven_scores)
+            two_ten_mean = self.get_mean(self.two_ten_scores)
+            two_fifteen_mean = self.get_mean(self.two_fifteen_scores)
+            st_dev = self.get_stdev()
+            self.ids.average.text = str(two_seven_mean) + "       " + str(two_ten_mean) + "       " + str(
+                two_fifteen_mean)
+            self.ids.st_dev.text = str(st_dev)
+
+        except statistics.StatisticsError:
+            self.ids.error.text = "You do not have enough scores to do any analysis"
 
     def get_stdev(self):
         two_seven_stdev = statistics.stdev(self.two_seven_scores)
@@ -1531,6 +1580,60 @@ class ViewStatsScreen(Screen):
         return mean
 
 
+class ViewAllScoresScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.userID = 0
+        self.scores = []
+
+    def exec_sql(self, query, values):
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
+
+    def get_date(self, oldest_date):
+        oldest_date = str(oldest_date)
+        oldest_date = oldest_date.strip("[]")
+        oldest_date = oldest_date.strip("()")
+        oldest_date = oldest_date.strip(",")
+        oldest_date = oldest_date.strip("'")
+        oldest_date = datetime.date(int(oldest_date[0:4]), int(oldest_date[5:7]), int(oldest_date[8:10]))
+        return oldest_date
+
+    def view_scores(self):
+        self.ids.scores.text = ""
+        oldest_date = self.exec_sql('''SELECT date FROM Scores WHERE userID LIKE ? ORDER BY date(date) ASC LIMIT 1''',
+                                    (self.userID,))
+        oldest_date = self.get_date(oldest_date)
+        tomorrow = datetime.date.today()
+        tomorrow += datetime.timedelta(days=1)
+        while oldest_date != tomorrow:
+            scores = self.exec_sql('''SELECT score, distance, weather, light, ammo, range, target, date FROM Scores 
+                                    WHERE userID LIKE ? AND date(date) LIKE ?''',
+                                   ([self.userID, oldest_date,]))
+
+            if scores is not None:
+                for i in scores:
+                    self.scores.append(i)
+            if oldest_date == tomorrow:
+                break
+            oldest_date += datetime.timedelta(days=1)
+        for i in self.scores:
+            for j in i:
+                j = str(j)
+                self.ids.scores.text += (j + "    ")
+            self.ids.scores.text += "\n\n"
+
+
 login_screen = LoginScreen()
 register_screen = RegisterScreen()
 find_club = FindClubScreen()
@@ -1543,6 +1646,7 @@ new_setup = NewSetupScreen()
 view_setup = ViewSetupScreen()
 edit_setup = EditSetupScreen()
 view_stats = ViewStatsScreen()
+view_all_scores = ViewAllScoresScreen()
 
 sm = ScreenManager(transition=FadeTransition())
 
@@ -1558,6 +1662,7 @@ sm.add_widget(view_setup)
 sm.add_widget(edit_setup)
 sm.add_widget(view_score_home)
 sm.add_widget(view_stats)
+sm.add_widget(view_all_scores)
 
 
 class ScoreStore(App):

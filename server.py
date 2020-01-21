@@ -27,6 +27,8 @@ def main(conn):
     cursor.execute(query, values)
     results = cursor.fetchall()
     results = pickle.dumps(results)
+    if not results:
+        main(conn)
     conn.send(results)
     db.commit()
     try:
