@@ -147,7 +147,131 @@ Builder.load_string("""
         id: error
         text: ""
         pos_hint: {"x":0, "y":-0.4}
-                                    
+        
+    Button:
+        font_size: 15
+        size_hint: 0.1, 0.05
+        pos_hint: {"x": 0.05, "y": 0.05}
+        text: "Coaches"
+        on_press:
+            root.manager.current = 'coach-login'
+
+<CoachLoginScreen>
+    name: 'coach-login'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+
+    Label:
+        text: "Coach Email Address"
+        pos_hint: {"x":-0.3, "y":0.1925}
+
+    TextInput:
+        id: email
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.667}
+
+    Label:
+        text: "Password"
+        pos_hint: {"x":-0.3, "y":0.11}
+
+    TextInput:
+        id: password
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.584}
+        password: True
+
+    Button:
+        font_size: 30
+        size_hint: 0.4, 0.1
+        pos_hint: {"x":0.3, "y":0.42}
+        text: "Log in"
+        on_press:
+            root.login(email.text, password.text)
+
+    Label:
+        font_size: 20
+        text: "or"
+        pos_hint: {"x":0, "y":-0.12}
+
+    Button:
+        font_size: 30
+        size_hint: 0.4, 0.1
+        pos_hint: {"x":0.3, "y":0.23}
+        text: "Register"
+        on_press: 
+            root.manager.current = 'coach-register'
+            
+    Label:
+        id: error
+        text: ""
+        pos_hint: {"x":0, "y":-0.4}
+        
+<CoachRegisterScreen>
+    name: 'coach-register'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+ 
+    Label:
+        text: "Name"
+        pos_hint: {"x":-0.3, "y":0.275}
+
+    TextInput:
+        id: name
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.75}
+
+    Label:
+        text: "Email Address"
+        pos_hint: {"x":-0.3, "y":0.1925}
+
+    TextInput:
+        id: email
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.667}
+
+    Label:
+        text: "Password"
+        pos_hint: {"x":-0.3, "y":0.11}
+
+    TextInput:
+        id: password
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.584}
+        password: True
+
+    Label:
+        text: "Club ID"
+        pos_hint: {"x":-0.3, "y":0.0275}
+
+    TextInput:
+        id: clubid
+        size_hint: 0.5, 0.05
+        pos_hint: {"x":0.3, "y":0.501}
+            
+    Button:
+        font_size: 30
+        size_hint: 0.4, 0.1
+        pos_hint: {"x":0.3, "y":0.35}
+        text: "Register Account"
+        on_press: 
+            root.register_account(name.text, email.text, password.text, clubid.text)
+                        
+    Label:
+        id: error
+        text: ""
+        pos_hint: {"x": 0, "y": -0.2}
+            
+    Button:
+        font_size: 20
+        text: "Return to login"
+        size_hint: 0.2, 0.05
+        pos_hint: {"x": 0.4, "y":0.15}
+        on_press: root.manager.current = 'login'
+                                            
 <FindClubScreen>
     name: 'find-club'
     Image:
@@ -198,6 +322,35 @@ Builder.load_string("""
         text: "Register Account"
         on_press:
             root.manager.current = 'register'
+
+<CoachHomeScreen>
+    name: 'coach-home'
+    Image:
+        source: 'scorestorelogo.png'
+        size_hint: 0.8, 0.8
+        pos_hint: {"x":0.1 , "y":0.535}
+        
+    Label:
+        id: user
+        text: "Logged in as: "
+        font_size: 15
+        pos_hint: {"x": 0.35, "y": 0.35}
+        
+    Label:
+        text: "Shooter           Averages:      2&7       2&10      2&15          Standard Deviation"
+        font_size: 20
+        pos_hint: {"x": 0, "y": 0.25}
+        
+    ScrollView:
+        size_hint: 0.8, 0.65
+        pos_hint: {"x": 0.075, "y": 0.05}
+        Label:
+            id: stats
+            font_size: 15
+            size_hint: None, None
+            size: self.texture_size
+            text: ""     
+        
 
 <HomeScreen>
     name: 'home'
@@ -872,7 +1025,7 @@ class LoginScreen(Screen):
             return
 
     def get_password(self):
-        user_pw = self.exec_sql('''SELECT password FROM Users WHERE email LIKE ?''', (self.email,))
+        user_pw = self.exec_sql('''SELECT password FROM Users WHERE email LIKE ? AND userID > 1000''', (self.email,))
         user_pw = str(user_pw)
         user_pw = user_pw.strip("[]")
         user_pw = user_pw.strip("()")
@@ -881,7 +1034,7 @@ class LoginScreen(Screen):
         return user_pw
 
     def get_user_name(self):
-        user_name = self.exec_sql('''SELECT name FROM Users WHERE email LIKE ?''', (self.email,))
+        user_name = self.exec_sql('''SELECT name FROM Users WHERE email LIKE ? AND userID > 1000''', (self.email,))
         user_name = str(user_name)
         user_name = user_name.strip("[]")
         user_name = user_name.strip("()")
@@ -890,7 +1043,7 @@ class LoginScreen(Screen):
         return user_name
 
     def get_user_id(self):
-        user_id = self.exec_sql('''SELECT userID FROM Users WHERE email LIKE ?''', (self.email,))
+        user_id = self.exec_sql('''SELECT userID FROM Users WHERE email LIKE ? AND userID > 1000''', (self.email,))
         user_id = str(user_id)
         user_id = user_id.strip("[]")
         user_id = user_id.strip("()")
@@ -937,7 +1090,6 @@ class RegisterScreen(Screen):
         self.last_uid = 0
 
     def exec_sql(self, query, values):
-        print(query, values)
         mySocket.send(query.encode())
         val = bool(mySocket.recv(1024).decode())
         if val is not True:
@@ -946,7 +1098,6 @@ class RegisterScreen(Screen):
         mySocket.send(values)
         results = mySocket.recv(1024)
         results = pickle.loads(results)
-        print(results)
         if len(results) > 0:
             return results
         else:
@@ -977,8 +1128,7 @@ class RegisterScreen(Screen):
             self.ids.error.text = "Invalid input check format of inputted info"
             return
 
-        already = self.exec_sql('''SELECT email FROM Users WHERE email LIKE ?''', (self.email,))
-        print(already)
+        already = self.exec_sql('''SELECT email FROM Users WHERE email LIKE ? AND userID > 1000''', (self.email,))
 
         if already:
             self.ids.error.text = "An account with that email already exists"
@@ -1046,6 +1196,268 @@ class FindClubScreen(Screen):
             self.ids.result_list.text += str(self.results[i]).strip('()') + "\n"
             if count == 5:
                 break
+
+
+class CoachLoginScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.email = ""
+        self.password = ""
+        self.password_attempt = ""
+        self.user_name = ""
+        self.user_id = 0
+
+    def exec_sql(self, query, values):
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
+
+    def get_password(self):
+        user_pw = self.exec_sql('''SELECT password FROM Users WHERE email LIKE ? AND userID < 1000''', (self.email,))
+        user_pw = str(user_pw)
+        user_pw = user_pw.strip("[]")
+        user_pw = user_pw.strip("()")
+        user_pw = user_pw.strip(",")
+        user_pw = user_pw.strip("'")
+        return user_pw
+
+    def get_user_name(self):
+        user_name = self.exec_sql('''SELECT name FROM Users WHERE email LIKE ? AND userID < 1000''', (self.email,))
+        user_name = str(user_name)
+        user_name = user_name.strip("[]")
+        user_name = user_name.strip("()")
+        user_name = user_name.strip(",")
+        user_name = user_name.strip("'")
+        return user_name
+
+    def get_user_id(self):
+        user_id = self.exec_sql('''SELECT userID FROM Users WHERE email LIKE ? AND userID < 1000''', (self.email,))
+        user_id = str(user_id)
+        user_id = user_id.strip("[]")
+        user_id = user_id.strip("()")
+        user_id = user_id.strip(",")
+        user_id = user_id.strip("'")
+        user_id = int(user_id)
+        return user_id
+
+    def login(self, emailText, passwordText):
+        try:
+            self.ids.error.text = ""
+            self.email = emailText
+            self.password_attempt = passwordText
+            self.password = self.get_password()
+            self.user_name = self.get_user_name()
+            self.user_id = self.get_user_id()
+            self.password_attempt = hashlib.md5(self.password_attempt.encode())
+            self.password_attempt = self.password_attempt.hexdigest()
+
+        except ValueError:
+            self.ids.error.text = "Login unsuccessful please check your details and try again"
+            return
+
+        if self.password == self.password_attempt:
+            coach_home_screen.ids.user.text += self.user_name
+            coach_home_screen.user_name = self.user_name
+            coach_home_screen.user_id = self.user_id
+            coach_home_screen.get_club_members()
+            sm.current = 'coach-home'
+
+        else:
+            self.ids.error.text = "Login unsuccessful please check your details and try again"
+            return
+
+
+class CoachRegisterScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.fullname = ""
+        self.email = ""
+        self.password = ""
+        self.clubID = 0
+        self.userID = 0
+        self.last_user = []
+        self.last_uid = 0
+
+    def exec_sql(self, query, values):
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
+
+    def create_uid(self, last_user):
+        for i in last_user:
+            last_uid = i
+            break
+
+        last_uid = str(last_uid)
+        last_uid = last_uid.strip("()")
+        last_uid = last_uid.strip(",")
+        last_uid = int(last_uid)
+        userID = last_uid + 1
+        return userID
+
+    def register_account(self, nameText, emailText, passwordText, clubidText):
+        self.ids.error.text = ""
+        try:
+            self.fullname = nameText
+            self.email = emailText.lower()
+            self.password = passwordText
+            self.clubID = int(clubidText)
+            self.userID = self.create_uid(self.exec_sql('''SELECT max(userID) as userID FROM Users WHERE userID < 1000;''', []))
+
+        except ValueError:
+            self.ids.error.text = "Invalid input check format of inputted info"
+            return
+
+        already = self.exec_sql('''SELECT email FROM Users WHERE email LIKE ? AND userID < 1000''', (self.email,))
+
+        if already:
+            self.ids.error.text = "An account with that email already exists"
+            return
+
+        self.password = hashlib.md5(self.password.encode())
+        self.password = self.password.hexdigest()
+
+        self.exec_sql('''INSERT INTO Users(userID, name, clubID, email, password) VALUES (?,?,?,?,?)''',
+                     (self.userID, self.fullname, self.clubID, self.email, self.password))
+
+        sm.current = 'coach-login'
+
+
+class CoachHomeScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.user_name = ""
+        self.user_id = 0
+        self.club_id = 0
+        self.club_members_ids = []
+        self.get_club_members_ids = []
+
+    def exec_sql(self, query, values):
+        mySocket.send(query.encode())
+        val = bool(mySocket.recv(1024).decode())
+        if val is not True:
+            return
+        values = pickle.dumps(values)
+        mySocket.send(values)
+        results = mySocket.recv(1024)
+        results = pickle.loads(results)
+        if len(results) > 0:
+            return results
+        else:
+            return
+
+    def get_club_members(self):
+        self.club_id = self.exec_sql('''SELECT clubID FROM Users WHERE userID LIKE ?''', (self.user_id,))
+        self.club_id = self.club_id[0]
+        self.club_id = str(self.club_id)
+        self.club_id = self.club_id.strip("()")
+        self.club_id = self.club_id.strip(",")
+        self.club_id = int(self.club_id)
+        self.get_club_members_ids = self.exec_sql('''SELECT userID FROM Users WHERE clubID LIKE ? AND userID > 1000''', (self.club_id,))
+        for i in self.get_club_members_ids:
+            i = str(i)
+            i = i.strip("()")
+            i = i.strip(",")
+            i = int(i)
+            self.club_members_ids.append(i)
+
+        for i in self.club_members_ids:
+            self.generate_user_stats(i)
+
+    def generate_user_stats(self, user_id):
+        # get user scores
+        two_seven_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 0 AND 35.7 
+                                                         AND userID LIKE ?''', (user_id,))
+        two_seven_scores = []
+        two_ten_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 35.8 AND 50.99 
+                                                             AND userID LIKE ?''', (user_id,))
+        two_ten_scores = []
+        two_fifteen_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 51 AND 76 
+                                                             AND userID LIKE ?''', (user_id,))
+        two_fifteen_scores = []
+        for i in two_seven_scores_temp:
+            i = str(i)
+            i = i.strip("()")
+            i = i.strip(",")
+            i = float(i)
+            two_seven_scores.append(i)
+
+        for i in two_ten_scores_temp:
+            i = str(i)
+            i = i.strip("()")
+            i = i.strip(",")
+            i = float(i)
+            two_ten_scores.append(i)
+
+        for i in two_fifteen_scores_temp:
+            i = str(i)
+            i = i.strip("()")
+            i = i.strip(",")
+            i = float(i)
+            two_fifteen_scores.append(i)
+
+        # generate mean scores
+        try:
+            two_seven_mean = self.get_mean(two_seven_scores)
+            two_ten_mean = self.get_mean(two_ten_scores)
+            two_fifteen_mean = self.get_mean(two_fifteen_scores)
+            two_seven_stdev = statistics.stdev(two_seven_scores)
+            two_ten_stdev = statistics.stdev(two_ten_scores)
+            two_fifteen_stdev = statistics.stdev(two_fifteen_scores)
+            mean_stdev = statistics.mean([two_seven_stdev, two_ten_stdev, two_fifteen_stdev])
+            mean_stdev = round(mean_stdev, 1)
+
+            stats = str(two_seven_mean) + "           " + str(two_ten_mean) + "           " + str(two_fifteen_mean) + \
+                    "                                    " + str(mean_stdev)
+
+        except:
+            stats = "Could not generate statistics"
+
+        user_name = self.exec_sql('''SELECT name FROM Users WHERE userID LIKE ?''', (user_id,))
+        user_name = str(user_name)
+        user_name = user_name.strip("[]")
+        user_name = user_name.strip("()")
+        user_name = user_name.strip(",")
+        user_name = user_name.strip("'")
+        spaces = 52 - len(user_name)
+        gap = ""
+        for i in range(spaces):
+            gap += " "
+        self.ids.stats.text += (user_name + gap + stats + "\n\n")
+
+    def get_mean(self, scores):
+        vees = []
+        points = []
+        for i in scores:
+            a, b = math.modf(i)
+            a = round(a, 1)
+            vees.append(a)
+            points.append(b)
+
+        mean_vees = statistics.mean(vees)
+        mean_vees = round(mean_vees, 1)
+        mean_points = statistics.mean(points)
+        mean_points = round(mean_points, 0)
+        mean = mean_points + mean_vees
+        return mean
 
 
 class HomeScreen(Screen):
@@ -1647,6 +2059,9 @@ view_setup = ViewSetupScreen()
 edit_setup = EditSetupScreen()
 view_stats = ViewStatsScreen()
 view_all_scores = ViewAllScoresScreen()
+coach_login = CoachLoginScreen()
+coach_register = CoachRegisterScreen()
+coach_home_screen = CoachHomeScreen()
 
 sm = ScreenManager(transition=FadeTransition())
 
@@ -1663,6 +2078,9 @@ sm.add_widget(edit_setup)
 sm.add_widget(view_score_home)
 sm.add_widget(view_stats)
 sm.add_widget(view_all_scores)
+sm.add_widget(coach_login)
+sm.add_widget(coach_register)
+sm.add_widget(coach_home_screen)
 
 
 class ScoreStore(App):
