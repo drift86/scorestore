@@ -1403,68 +1403,72 @@ class CoachHomeScreen(Screen):      # create coach home screen object (in Kivy e
 
     def generate_user_stats(self, user_id):
         # get all users scores from DB for each type of shoot
-        two_seven_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 0 AND 35.7 
-                                                         AND userID LIKE ?''', (user_id,))
-        two_seven_scores = []
-        two_ten_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 35.8 AND 50.99 
-                                                             AND userID LIKE ?''', (user_id,))
-        two_ten_scores = []
-        two_fifteen_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 51 AND 76 
-                                                             AND userID LIKE ?''', (user_id,))
-        two_fifteen_scores = []
-        for i in two_seven_scores_temp:     # format scores so they can be analysed
-            i = str(i)
-            i = i.strip("()")
-            i = i.strip(",")
-            i = float(i)
-            two_seven_scores.append(i)
-
-        for i in two_ten_scores_temp:       # format scores so they can be analysed
-            i = str(i)
-            i = i.strip("()")
-            i = i.strip(",")
-            i = float(i)
-            two_ten_scores.append(i)
-
-        for i in two_fifteen_scores_temp:   # format scores so they can be analysed
-            i = str(i)
-            i = i.strip("()")
-            i = i.strip(",")
-            i = float(i)
-            two_fifteen_scores.append(i)
-
-        # generate users mean scores and standard deviations for each type of shoot
         try:
-            two_seven_mean = self.get_mean(two_seven_scores)
-            two_ten_mean = self.get_mean(two_ten_scores)
-            two_fifteen_mean = self.get_mean(two_fifteen_scores)
-            two_seven_stdev = statistics.stdev(two_seven_scores)
-            two_ten_stdev = statistics.stdev(two_ten_scores)
-            two_fifteen_stdev = statistics.stdev(two_fifteen_scores)
-            mean_stdev = statistics.mean([two_seven_stdev, two_ten_stdev, two_fifteen_stdev])
-            # calculate average standard deviation for each type of shoot
-            mean_stdev = round(mean_stdev, 1)
+            two_seven_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 0 AND 35.7 
+                                                         AND userID LIKE ?''', (user_id,))
+            two_seven_scores = []
+            two_ten_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 35.8 AND 50.99 
+                                                             AND userID LIKE ?''', (user_id,))
+            two_ten_scores = []
+            two_fifteen_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 51 AND 76 
+                                                             AND userID LIKE ?''', (user_id,))
+            two_fifteen_scores = []
+            for i in two_seven_scores_temp:     # format scores so they can be analysed
+                i = str(i)
+                i = i.strip("()")
+                i = i.strip(",")
+                i = float(i)
+                two_seven_scores.append(i)
 
-            # create stats string that can be displayed in GUI
-            stats = str(two_seven_mean) + "           " + str(two_ten_mean) + "           " + str(two_fifteen_mean) + \
-                    "                                    " + str(mean_stdev)
+            for i in two_ten_scores_temp:       # format scores so they can be analysed
+                i = str(i)
+                i = i.strip("()")
+                i = i.strip(",")
+                i = float(i)
+                two_ten_scores.append(i)
+
+            for i in two_fifteen_scores_temp:   # format scores so they can be analysed
+                i = str(i)
+                i = i.strip("()")
+                i = i.strip(",")
+                i = float(i)
+                two_fifteen_scores.append(i)
+
+            # generate users mean scores and standard deviations for each type of shoot
+            try:
+                two_seven_mean = self.get_mean(two_seven_scores)
+                two_ten_mean = self.get_mean(two_ten_scores)
+                two_fifteen_mean = self.get_mean(two_fifteen_scores)
+                two_seven_stdev = statistics.stdev(two_seven_scores)
+                two_ten_stdev = statistics.stdev(two_ten_scores)
+                two_fifteen_stdev = statistics.stdev(two_fifteen_scores)
+                mean_stdev = statistics.mean([two_seven_stdev, two_ten_stdev, two_fifteen_stdev])
+                # calculate average standard deviation for each type of shoot
+                mean_stdev = round(mean_stdev, 1)
+
+                # create stats string that can be displayed in GUI
+                stats = str(two_seven_mean) + "           " + str(two_ten_mean) + "           " + str(two_fifteen_mean) + \
+                        "                                    " + str(mean_stdev)
+
+            except:
+                # if any errors occur display error message
+                stats = "Could not generate statistics"
+
+            user_name = self.exec_sql('''SELECT name FROM Users WHERE userID LIKE ?''', (user_id,))
+            # select users name so it can be displayed next to their statistics
+            user_name = str(user_name)              # format user name to be displayed
+            user_name = user_name.strip("[]")
+            user_name = user_name.strip("()")
+            user_name = user_name.strip(",")
+            user_name = user_name.strip("'")
+            spaces = 52 - len(user_name)            # attempt to get even spacings for different length names
+            gap = ""
+            for i in range(spaces):
+                gap += " "
+            self.ids.stats.text += (user_name + gap + stats + "\n\n")   # add users stats into GUI
 
         except:
-            # if any errors occur display error message
-            stats = "Could not generate statistics"
-
-        user_name = self.exec_sql('''SELECT name FROM Users WHERE userID LIKE ?''', (user_id,))
-        # select users name so it can be displayed next to their statistics
-        user_name = str(user_name)              # format user name to be displayed
-        user_name = user_name.strip("[]")
-        user_name = user_name.strip("()")
-        user_name = user_name.strip(",")
-        user_name = user_name.strip("'")
-        spaces = 52 - len(user_name)            # attempt to get even spacings for different length names
-        gap = ""
-        for i in range(spaces):
-            gap += " "
-        self.ids.stats.text += (user_name + gap + stats + "\n\n")   # add users stats into GUI
+            self.ids.stats.text += ""
 
     def get_mean(self, scores):                     # function to calculate mean score for type of shoot
         vees = []
@@ -1927,16 +1931,20 @@ class ViewScoreHomeScreen(Screen):      # create view score home screen object (
         most_recent = self.exec_sql('''SELECT score, distance, date FROM Scores WHERE userID LIKE ? ORDER BY date(date)
                                        DESC LIMIT 8''', (self.userID,))
         # select the 8 most recent scores, using date field to get most recent ones
-        for i in most_recent:   # parse through most recent shoots getting each shoots data
-            for j in i:
-                j = str(j)
-                if len(j) == 4:                     # check length of fields to get them aligned in GUI properly
-                    self.ids.most_recent_scores.text += (j + "       ")
+        try:
+            for i in most_recent:   # parse through most recent shoots getting each shoots data
+                for j in i:
+                    j = str(j)
+                    if len(j) == 4:                     # check length of fields to get them aligned in GUI properly
+                        self.ids.most_recent_scores.text += (j + "       ")
 
-                else:
-                    self.ids.most_recent_scores.text += (j+"        ")
+                    else:
+                        self.ids.most_recent_scores.text += (j+"        ")
 
-            self.ids.most_recent_scores.text += "\n\n"  # make a 2 new lines between scores/shoots in GUI
+                self.ids.most_recent_scores.text += "\n\n"  # make a 2 new lines between scores/shoots in GUI
+
+        except:
+            self.ids.most_recent_scores.text += "No scores in database"
 
 
 class ViewStatsScreen(Screen):      # create view stats screen object (in Kivy each 'screen' is its own object)
@@ -1965,34 +1973,38 @@ class ViewStatsScreen(Screen):      # create view stats screen object (in Kivy e
             return                                # if query did not generate any results no need to return them
 
     def get_scores(self):       # get all users scores from DB for each type of shoot
-        self.two_seven_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 0 AND 35.7 
-                                                 AND userID LIKE ?''', (self.userID,))
-        self.two_ten_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 35.8 AND 50.99 
-                                                 AND userID LIKE ?''', (self.userID,))
-        self.two_fifteen_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 51 AND 76 
-                                                 AND userID LIKE ?''', (self.userID,))
-        for i in self.two_seven_scores_temp:        # format scores so they can be analysed
-            i = str(i)
-            i = i.strip("()")
-            i = i.strip(",")
-            i = float(i)
-            self.two_seven_scores.append(i)
+        try:
+            self.two_seven_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 0 AND 35.7 
+                                                    AND userID LIKE ?''', (self.userID,))
+            self.two_ten_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 35.8 AND 50.99 
+                                                    AND userID LIKE ?''', (self.userID,))
+            self.two_fifteen_scores_temp = self.exec_sql('''SELECT score FROM Scores WHERE score BETWEEN 51 AND 76 
+                                                    AND userID LIKE ?''', (self.userID,))
+            for i in self.two_seven_scores_temp:        # format scores so they can be analysed
+                i = str(i)
+                i = i.strip("()")
+                i = i.strip(",")
+                i = float(i)
+                self.two_seven_scores.append(i)
 
-        for i in self.two_ten_scores_temp:          # format scores so they can be analysed
-            i = str(i)
-            i = i.strip("()")
-            i = i.strip(",")
-            i = float(i)
-            self.two_ten_scores.append(i)
+            for i in self.two_ten_scores_temp:          # format scores so they can be analysed
+                i = str(i)
+                i = i.strip("()")
+                i = i.strip(",")
+                i = float(i)
+                self.two_ten_scores.append(i)
 
-        for i in self.two_fifteen_scores_temp:      # format scores so they can be analysed
-            i = str(i)
-            i = i.strip("()")
-            i = i.strip(",")
-            i = float(i)
-            self.two_fifteen_scores.append(i)
+            for i in self.two_fifteen_scores_temp:      # format scores so they can be analysed
+                i = str(i)
+                i = i.strip("()")
+                i = i.strip(",")
+                i = float(i)
+                self.two_fifteen_scores.append(i)
 
-        self.get_stats()    # work out stats using get_stats method
+            self.get_stats()    # work out stats using get_stats method
+
+        except:
+            self.ids.average.text += "No scores in database"
 
     def get_stats(self):
         try:         # generate users mean scores and standard deviations for each type of shoot
@@ -2067,30 +2079,34 @@ class ViewAllScoresScreen(Screen):      # create view all scores screen object (
 
     def view_scores(self):
         self.ids.scores.text = ""
-        oldest_date = self.exec_sql('''SELECT date FROM Scores WHERE userID LIKE ? ORDER BY date(date) ASC LIMIT 1''',
-                                    (self.userID,))     # get date of first shoot (oldest) from DB
-        oldest_date = self.get_date(oldest_date)        # format it
-        tomorrow = datetime.date.today()        # get todays date
-        tomorrow += datetime.timedelta(days=1)  # add one day to get tomorrows data
-        while oldest_date != tomorrow:          # increment days until date is tomorrow
-            scores = self.exec_sql('''SELECT score, distance, weather, light, ammo, range, target, date FROM Scores 
-                                    WHERE userID LIKE ? AND date(date) LIKE ?''',
-                                   ([self.userID, oldest_date,]))
-            # select scores with "oldest" date
-            if scores is not None:
-                for i in scores:            # if any scores are found on "oldest date" add them to be put into GUI
-                    self.scores.append(i)
+        try:
+            oldest_date = self.exec_sql('''SELECT date FROM Scores WHERE userID LIKE ? ORDER BY date(date) ASC LIMIT 1''',
+                                        (self.userID,))     # get date of first shoot (oldest) from DB
+            oldest_date = self.get_date(oldest_date)        # format it
+            tomorrow = datetime.date.today()        # get todays date
+            tomorrow += datetime.timedelta(days=1)  # add one day to get tomorrows data
+            while oldest_date != tomorrow:          # increment days until date is tomorrow
+                scores = self.exec_sql('''SELECT score, distance, weather, light, ammo, range, target, date FROM Scores 
+                                        WHERE userID LIKE ? AND date(date) LIKE ?''',
+                                        ([self.userID, oldest_date,]))
+                                        # select scores with "oldest" date
+                if scores is not None:
+                    for i in scores:            # if any scores are found on "oldest date" add them to be put into GUI
+                        self.scores.append(i)
 
-            if oldest_date == tomorrow:     # when "oldest date" reaches tomorrow exit loop
-                break
+                if oldest_date == tomorrow:     # when "oldest date" reaches tomorrow exit loop
+                    break
 
-            oldest_date += datetime.timedelta(days=1)   # add one to oldest date
+                oldest_date += datetime.timedelta(days=1)   # add one to oldest date
 
-        for i in self.scores:       # increment through scores and add them (and details of shoot) into GUI
-            for j in i:
-                j = str(j)
-                self.ids.scores.text += (j + "    ")
-            self.ids.scores.text += "\n\n"
+            for i in self.scores:       # increment through scores and add them (and details of shoot) into GUI
+                for j in i:
+                    j = str(j)
+                    self.ids.scores.text += (j + "    ")
+                self.ids.scores.text += "\n\n"
+
+        except:
+            self.ids.scores.text += "No scores in database"
 
 
 login_screen = LoginScreen()                # create instances of all screens ready to be put
